@@ -480,7 +480,7 @@ async function cargarSheets() {
 // ══════════════════════════════════════════════════════════════
 function toRow(c) {
   return [
-    c.realizado ? 'TRUE' : 'FALSE',  // A: REALIZADO
+    c.realizado ? true : false,       // A: REALIZADO (boolean → checkbox real)
     c.fecha,                          // B: FECHA
     c.inicio,                         // C: INICIO
     c.fin,                            // D: FIN
@@ -494,14 +494,86 @@ function toRow(c) {
   ];
 }
 
+async function getSheetId() {
+  const meta = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
+  return meta.result.sheets.find(s => s.properties.title === TAB)?.properties.sheetId ?? 0;
+}
+
+// Convierte fecha D/M/YYYY o DD/MM/YYYY o YYYY-MM-DD a objeto Date para ordenar
+function fechaADate(f) {
+  if (!f) return new Date(9999,0,1);
+  if (f.includes('/')) {
+    const p = f.split('/');
+    return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
+  }
+  return new Date(f);
+}
+
 async function appendRow(c) {
+  // 1. Añadir la fila al final
   await gapi.client.sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
     range: `${TAB}!A:K`,
-    valueInputOption: 'RAW',
+    valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     resource: { values: [toRow(c)] },
   });
+
+  // 2. Aplicar formato checkbox a la columna A de la nueva fila
+  // (necesitamos saber qué fila se acaba de añadir)
+  try {
+    const sheetId = await getSheetId();
+    // Obtener total de filas para saber dónde está la nueva
+    const r = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID, range: `${TAB}!A:A`
+    });
+    const lastRow = (r.result.values || []).length; // incluye cabecera
+
+    await gapi.client.sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      resource: { requests: [{
+        repeatCell: {
+          range: { sheetId, startRowIndex: lastRow-1, endRowIndex: lastRow, startColumnIndex: 0, endColumnIndex: 1 },
+          cell: { dataValidation: { condition: { type: 'BOOLEAN' }, showCustomUi: true } },
+          fields: 'dataValidation'
+        }
+      }]}
+    });
+  } catch(e) { console.warn('No se pudo aplicar checkbox format:', e); }
+
+  // 3. Ordenar sheet por fecha (columna B = índice 1), excluyendo cabecera
+  await ordenarPorFecha();
+}
+
+async function ordenarPorFecha() {
+  try {
+    const sheetId = await getSheetId();
+    // Obtener total de filas
+    const r = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID, range: `${TAB}!B:B`
+    });
+    const totalRows = (r.result.values || []).length;
+    if (totalRows <= 2) return; // nada que ordenar
+
+    await gapi.client.sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      resource: { requests: [{
+        sortRange: {
+          range: {
+            sheetId,
+            startRowIndex: 1,        // fila 2 (excluye cabecera)
+            endRowIndex: totalRows,
+            startColumnIndex: 0,
+            endColumnIndex: 11
+          },
+          sortSpecs: [{
+            dimensionIndex: 1,       // columna B = FECHA
+            sortOrder: 'ASCENDING'
+          }]
+        }
+      }]}
+    });
+  } catch(e) { console.warn('No se pudo ordenar:', e); }
 }
 
 async function updateRow(c) {
@@ -509,18 +581,21 @@ async function updateRow(c) {
   await gapi.client.sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
     range: `${TAB}!A${c._row}:K${c._row}`,
-    valueInputOption: 'RAW',
+    valueInputOption: 'USER_ENTERED',
     resource: { values: [toRow(c)] },
   });
+  // Reordenar también al editar
+  await ordenarPorFecha();
 }
 
 async function deleteRow(c) {
   if (!c._row) return;
-  const meta = await gapi.client.sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
-  const sheetId = meta.result.sheets.find(s => s.properties.title === TAB)?.properties.sheetId ?? 0;
+  const sheetId = await getSheetId();
   await gapi.client.sheets.spreadsheets.batchUpdate({
     spreadsheetId: SHEET_ID,
-    resource: { requests: [{ deleteDimension: { range: { sheetId, dimension:'ROWS', startIndex: c._row-1, endIndex: c._row } } }] }
+    resource: { requests: [{ deleteDimension: {
+      range: { sheetId, dimension:'ROWS', startIndex: c._row-1, endIndex: c._row }
+    }}]}
   });
 }
 
