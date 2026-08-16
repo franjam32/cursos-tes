@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#00e5a0">
+<link rel="manifest" href="/cursos-tes/manifest.json">
+<title>Cursos TES · Escritorio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+  :root {
+    --bg:#0d0f14;
+    --panel:#13161e;
+    --panel2:#1a1e28;
+    --border:#252a38;
+    --accent:#00e5a0;
+    --blue:#5ab8f8;
+    --text:#e8eaf2;
+    --muted:#7a8099;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    min-height:100vh;
+    font-family:"DM Sans", sans-serif;
+    background:
+      radial-gradient(circle at 16% 20%, rgba(0,229,160,0.14), transparent 32%),
+      radial-gradient(circle at 84% 18%, rgba(90,184,248,0.12), transparent 30%),
+      linear-gradient(135deg, #090c11 0%, #121923 52%, var(--bg) 100%);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+  }
+  main {
+    width:min(1040px, 100%);
+    display:grid;
+    grid-template-columns:0.85fr 1.15fr;
+    gap:28px;
+    align-items:center;
+  }
+  .brand {
+    min-width:0;
+  }
+  .kicker {
+    color:var(--accent);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1.3px;
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+  h1 {
+    font-family:"DM Serif Display", serif;
+    font-size:64px;
+    line-height:0.95;
+    letter-spacing:0;
+    font-weight:400;
+    margin-bottom:18px;
+  }
+  .lead {
+    color:var(--muted);
+    font-size:17px;
+    line-height:1.55;
+    max-width:420px;
+  }
+  .apps {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .app-card {
+    min-height:340px;
+    background:rgba(19,22,30,0.84);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:22px;
+    display:flex;
+    flex-direction:column;
+    text-decoration:none;
+    color:var(--text);
+    transition:transform 0.18s, border-color 0.18s, background 0.18s;
+  }
+  .app-card:hover {
+    transform:translateY(-3px);
+    border-color:rgba(0,229,160,0.55);
+    background:rgba(26,30,40,0.92);
+  }
+  .app-card.secondary:hover { border-color:rgba(90,184,248,0.58); }
+  .icon {
+    width:48px;
+    height:48px;
+    display:grid;
+    place-items:center;
+    border-radius:8px;
+    background:rgba(0,229,160,0.12);
+    color:var(--accent);
+    font-size:24px;
+    margin-bottom:28px;
+  }
+  .secondary .icon {
+    background:rgba(90,184,248,0.12);
+    color:var(--blue);
+  }
+  h2 {
+    font-size:26px;
+    line-height:1.08;
+    margin-bottom:10px;
+    letter-spacing:0;
+  }
+  p {
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.5;
+  }
+  .features {
+    margin-top:auto;
+    padding-top:24px;
+    display:grid;
+    gap:8px;
+  }
+  .feature {
+    color:#b8bdcc;
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dot {
+    width:6px;
+    height:6px;
+    border-radius:999px;
+    background:var(--accent);
+  }
+  .secondary .dot { background:var(--blue); }
+  .open {
+    margin-top:22px;
+    min-height:42px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    color:#050f08;
+    background:var(--accent);
+  }
+  .secondary .open {
+    background:var(--blue);
+    color:#061018;
+  }
+  @media (max-width: 860px) {
+    body { align-items:flex-start; padding:22px 14px; }
+    main { grid-template-columns:1fr; gap:22px; }
+    h1 { font-size:44px; }
+    .lead { font-size:15px; }
+    .apps { grid-template-columns:1fr; }
+    .app-card { min-height:auto; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <section class="brand" aria-label="Cursos TES">
+    <div class="kicker">Formacion sanitaria compartida</div>
+    <h1>Cursos TES</h1>
+    <p class="lead">Acceso de escritorio para crear cursos, asignar docentes y consultar el seguimiento de cada formación desde una pantalla más amplia y cómoda.</p>
+  </section>
+
+  <section class="apps" aria-label="Versiones disponibles">
+    <a class="app-card" href="cursos_formativos.html">
+      <div class="icon">+</div>
+      <h2>Gestionar cursos</h2>
+      <p>Entrada para Fran y Julio. Permite añadir cursos, asignar instructores, revisar conflictos, exportar Excel y avisar al docente.</p>
+      <div class="features">
+        <div class="feature"><span class="dot"></span>Alta y edición de cursos</div>
+        <div class="feature"><span class="dot"></span>Calendario mensual de planificación</div>
+        <div class="feature"><span class="dot"></span>Seguimiento documental y factura</div>
+      </div>
+      <div class="open">Entrar a gestión</div>
+    </a>
+
+    <a class="app-card secondary" href="cursos_instructor.html">
+      <div class="icon">✓</div>
+      <h2>Mis cursos</h2>
+      <p>Entrada para el resto de docentes. Cada persona accede con su correo y ve solo sus cursos asignados.</p>
+      <div class="features">
+        <div class="feature"><span class="dot"></span>Consulta individual por email</div>
+        <div class="feature"><span class="dot"></span>Próximos cursos y calendario</div>
+        <div class="feature"><span class="dot"></span>Checklist de documentación</div>
+      </div>
+      <div class="open">Entrar como docente</div>
+    </a>
+  </section>
+</main>
+</body>
+</html>
