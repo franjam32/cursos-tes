@@ -886,6 +886,87 @@
     .form-group { margin-bottom:14px; }
     .cal-modal { max-width:680px; }
   }
+
+/* Course management presentation update — light palette and responsive calendar. */
+body.tema-claro {
+  --bg:#f0f3f7; --bg2:#ffffff; --bg3:#e8eef6; --border:#a6b6c9;
+  --accent:#173f70; --accent2:#67409a; --text:#17283c; --muted:#435b76; --success:#08613e;
+}
+body.tema-claro .header {background:var(--bg2);border-color:var(--border);box-shadow:0 2px 10px #173f7010;}
+body.tema-claro .sync-bar {background:#e1e9f3;border-color:var(--border);}
+body.tema-claro .tab,body.tema-claro .btn-icono,body.tema-claro .counter-pill,
+body.tema-claro .btn-accion,body.tema-claro .tipo-badge {background:var(--bg3);border-color:var(--border);color:var(--text);}
+body.tema-claro .tab.active,body.tema-claro .btn-nuevo,body.tema-claro .btn-save,
+body.tema-claro .desktop-chip.active {background:var(--accent);border-color:var(--accent);color:#fff;}
+body.tema-claro .section-title,body.tema-claro .card-lugar,body.tema-claro .counter-pill strong {color:var(--text);}
+body.tema-claro .meta-item,body.tema-claro .cal-num {color:var(--muted);}
+body.tema-claro .btn-accion.cal,body.tema-claro .btn-accion.done {background:#dcefe5;color:#084c30;border-color:#7aab92;}
+body.tema-claro .btn-accion.notif {background:#fff0cf;color:#694300;border-color:#b89548;}
+body.tema-claro .btn-accion.fact {background:#ece2f7;color:#4d2679;border-color:#a68bc7;}
+body.tema-claro .btn-accion.del {background:#fce4e2;color:#8f241d;border-color:#c98e89;}
+body.tema-claro .desktop-table tr:hover,body.tema-claro .desktop-table tr.selected {background:#e8f0fc;}
+body.tema-claro .desktop-table tr.realizado {opacity:1;background:#edf0f4;}
+body.tema-claro .tipo-badge.tipo-ppaa {background:#dcf2e7;color:#075035;}
+body.tema-claro .tipo-badge.tipo-desa {background:#dceaff;color:#153d72;}
+body.tema-claro .tipo-badge.tipo-svb {background:#fff0d2;color:#704300;}
+body.tema-claro .tipo-badge.tipo-tpc {background:#fce3df;color:#8d2a1b;}
+body.tema-claro .tipo-badge.tipo-amv {background:#eee4fc;color:#50247e;}
+body.tema-claro .desktop-kpi.warn .value,body.tema-claro .desktop-status.warn {color:#805000;}
+body.tema-claro .curso-card.realizado {opacity:1;background:#edf0f4!important;color:var(--text);}
+body.tema-claro .cal-cell {background:#fff;border-color:var(--border);}
+body.tema-claro .cal-cell.vacio {background:transparent;border-color:transparent;}
+body.tema-claro .cal-cell.hoy,body.tema-claro .desktop-cal-cell.today {border-color:var(--accent);}
+body.tema-claro .cal-cell.hoy .cal-num {color:var(--accent);}
+body.tema-claro .cal-dot.ppaa,body.tema-claro .desktop-event.ppaa {background:#dcf2e7;color:#075035;}
+body.tema-claro .cal-dot.desa,body.tema-claro .desktop-event.desa {background:#dceaff;color:#153d72;}
+body.tema-claro .cal-dot.svb,body.tema-claro .desktop-event.svb {background:#fff0d2;color:#704300;}
+body.tema-claro .cal-dot.tpc,body.tema-claro .desktop-event.tpc {background:#fce3df;color:#8d2a1b;}
+body.tema-claro .cal-dot.amv,body.tema-claro .desktop-event.amv {background:#eee4fc;color:#50247e;}
+body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e5eaf1;color:#33465e;}
+.extra-instructor-tabs {display:contents;}
+.calendar-filters {display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px;}
+.calendar-filters .tab {font-family:inherit;min-height:38px;}
+.calendar-instructor-legend {display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;color:var(--text);font-size:12px;}
+#desktopCalLegend {padding:0 16px;}
+.instructor-legend-item {display:inline-flex;gap:4px;align-items:center;}
+.course-instructor {display:inline-block;align-self:flex-start;max-width:100%;background:var(--instructor-color,#526175);color:#fff!important;padding:2px 5px;border-radius:4px;font-size:11px;line-height:1.35;font-weight:600;overflow-wrap:anywhere;white-space:normal;}
+.course-instructor.unassigned {background:#775300;}
+.calendar-course-type {display:block;font-weight:700;overflow-wrap:anywhere;}
+.calendar-course-info {display:block;font-size:11px;line-height:1.4;overflow-wrap:anywhere;}
+.cal-grid {gap:3px;align-items:stretch;}
+.cal-cell {min-width:0;min-height:78px;padding:4px 2px;height:auto;}
+.cal-dot-wrap {display:flex;flex-direction:column;gap:3px;}
+.cal-dot {display:flex;flex-direction:column;gap:3px;align-items:flex-start;max-width:100%;width:100%;padding:4px 2px;font-family:inherit;font-size:11px;line-height:1.3;white-space:normal;border:0;border-left:3px solid currentColor;border-radius:4px;cursor:pointer;min-height:44px;height:auto;}
+.cal-dot.realizado {opacity:1;border-left-style:dashed;}
+.assignment-section {border:1px solid var(--border);border-radius:10px;padding:13px;background:var(--bg3);}
+.assignment-section .form-label {font-size:13px;color:var(--text);text-transform:none;letter-spacing:0;}
+.assignment-help {font-size:12px;color:var(--muted);margin-bottom:10px;}
+.assignment-summary {font-size:13px;color:var(--text);margin:9px 0;padding:8px 0;font-weight:600;overflow-wrap:anywhere;}
+.assignment-section summary {cursor:pointer;color:var(--accent);font-size:13px;font-weight:600;padding:5px 0;}
+.assignment-section .form-select {background-color:var(--bg2);font-size:16px;}
+.instructor-custom {flex-wrap:wrap;}
+.instructor-custom input {flex:1 1 160px;min-width:0;}
+.btn-add-ins {white-space:normal;color:var(--text);min-height:42px;}
+@media(min-width:980px) {
+  .desktop-filter-row {flex-wrap:wrap;}
+  .desktop-main-head {flex-wrap:wrap;}
+  .desktop-search {min-width:160px;}
+  body.desktop-inspector-hidden .desktop-shell {grid-template-columns:minmax(0,1fr);}
+  body.desktop-inspector-hidden .desktop-side {display:none;}
+  body.desktop-inspector-hidden .desktop-workspace {max-width:none;}
+  body.desktop-inspector-hidden .desktop-table {min-width:900px;}
+  body.desktop-inspector-hidden .desktop-table td {padding:10px 8px;}
+  .desktop-cal-cell {min-width:0;min-height:115px;height:auto;}
+  .desktop-event {display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;text-align:left;white-space:normal;overflow-wrap:anywhere;line-height:1.35;font-family:inherit;font-size:12px;border:0;border-left:3px solid currentColor;cursor:pointer;}
+  .desktop-event.realizado {border-left-style:dashed;}
+}
+@media(max-width:420px) {
+  #calGrid {padding:8px 5px 16px!important;}
+  .cal-dot .course-instructor {padding:1px 3px;}
+  .calendar-filters {gap:5px;padding:8px;}
+  .calendar-filters .tab {padding:7px 9px;min-height:42px;}
+}
+
 </style>
 </head>
 <body>
@@ -930,12 +1011,13 @@
       </div>
     </div>
     <div class="tabs">
-      <div class="tab active" onclick="filtrar('todos',this)">Todos</div>
+      <div class="tab active" onclick="filtrar('pendiente',this)">Pendientes</div>
       <div class="tab" onclick="abrirVistaCalendario(this)">📅 Mes</div>
-      <div class="tab" onclick="filtrar('pendiente',this)">Pendientes</div>
+      <div class="tab" onclick="filtrar('todos',this)">Todos</div>
       <div class="tab" onclick="filtrar('realizado',this)">Realizados</div>
       <div class="tab" onclick="filtrar('fran',this)">📋 Fran</div>
       <div class="tab" onclick="filtrar('julio',this)">📋 Julio</div>
+      <span id="extraInstructorTabs" class="extra-instructor-tabs"></span>
       <div class="tab" onclick="filtrar('ppaa',this)">PPAA</div>
       <div class="tab" onclick="filtrar('desa',this)">DESA</div>
       <div class="tab" onclick="filtrar('svb',this)">SVB</div>
@@ -945,7 +1027,7 @@
 
   <div class="content" id="listaView">
     <div class="counter-strip" id="counterStrip"></div>
-    <div class="section-title" id="sectionTitle">Todos los cursos</div>
+    <div class="section-title" id="sectionTitle">Cursos pendientes</div>
     <div id="lista"></div>
   </div>
 
@@ -953,7 +1035,7 @@
     <div class="desktop-topbar">
       <div class="desktop-title-block">
         <h1>Gestión de cursos</h1>
-        <p>Planificación de cursos TES para Fran y Julio: alta, asignación de docentes, seguimiento documental, avisos y facturación desde una vista de escritorio.</p>
+        <p>Planificación de cursos TES: alta, asignación de docentes, seguimiento documental, avisos y facturación desde una vista de escritorio.</p>
       </div>
       <div class="desktop-actions">
         <button class="btn-icono" id="desktopNavToggle" onclick="toggleDesktopSidebar()" title="Ocultar menú lateral">⇤</button>
@@ -972,6 +1054,7 @@
             <input class="desktop-search" id="desktopSearch" type="search" placeholder="Buscar por curso, lugar, solicitante o instructor…" oninput="render()">
             <button class="desktop-chip active" id="desktopViewList" onclick="setDesktopView('lista')">Listado</button>
             <button class="desktop-chip" id="desktopViewCalendar" onclick="setDesktopView('calendario')">Calendario</button>
+            <button class="desktop-chip" id="desktopInspectorToggle" onclick="toggleDesktopInspector()" aria-expanded="true" aria-controls="courseInspectorPanel">Ocultar panel derecho</button>
           </div>
           <div class="desktop-section-title" id="desktopSectionTitle">Todos los cursos</div>
         </div>
@@ -1019,11 +1102,13 @@
             <div class="desktop-section-title" id="desktopCalTitle">Calendario</div>
             <button class="desktop-icon-btn" onclick="cambiarMesDesktop(1)">›</button>
           </div>
+          <div id="desktopCalFilters" class="calendar-filters"></div>
           <div class="desktop-calendar" id="desktopCalendar"></div>
+          <div id="desktopCalLegend" class="calendar-instructor-legend"></div>
         </div>
       </section>
 
-      <aside class="desktop-side">
+      <aside class="desktop-side" id="courseInspectorPanel">
         <div class="desktop-side-head">
           <div class="desktop-section-title">Curso seleccionado</div>
           <button class="desktop-icon-btn" onclick="abrirModal(desktopSelectedIdx)">Editar</button>
@@ -1080,22 +1165,29 @@
       <input type="text" class="form-input" id="fLugar" placeholder="Ej. Hogar San Rafael, Vigo">
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Solicitante / Empresa</label>
-      <div class="instructor-list" id="solicitanteList"></div>
-      <div class="instructor-custom">
-        <input type="text" class="form-input" id="nuevoSolicitante" placeholder="Añadir solicitante…" style="flex:1">
-        <button class="btn-add-ins" onclick="agregarSolicitanteCustom()">＋</button>
-      </div>
+    <div class="form-group assignment-section">
+      <label class="form-label" for="fInstructorSelect">Instructor asignado</label>
+      <p class="assignment-help">Quién imparte el curso</p>
+      <div id="instructorList"></div>
+      <div id="instructorAssignment" class="assignment-summary" aria-live="polite"></div>
+      <details id="newInstructorDetails"><summary>+ Añadir instructor</summary>
+        <div class="instructor-custom">
+          <input type="text" class="form-input" id="nuevoInstructor" aria-label="Nombre del nuevo instructor" placeholder="Nombre completo">
+          <button type="button" class="btn-add-ins" onclick="agregarInstructorCustom()">Añadir y asignar</button>
+        </div>
+      </details>
     </div>
-
-    <div class="form-group">
-      <label class="form-label">Instructor</label>
-      <div class="instructor-list" id="instructorList"></div>
-      <div class="instructor-custom">
-        <input type="text" class="form-input" id="nuevoInstructor" placeholder="Añadir instructor…" style="flex:1">
-        <button class="btn-add-ins" onclick="agregarInstructorCustom()">＋</button>
-      </div>
+    <div class="form-group assignment-section">
+      <label class="form-label" for="fSolicitanteSelect">Solicitante / Empresa</label>
+      <p class="assignment-help">Quién solicita la formación</p>
+      <div id="solicitanteList"></div>
+      <div id="solicitanteAssignment" class="assignment-summary" aria-live="polite"></div>
+      <details id="newSolicitanteDetails"><summary>+ Añadir solicitante</summary>
+        <div class="instructor-custom">
+          <input type="text" class="form-input" id="nuevoSolicitante" aria-label="Nombre del nuevo solicitante" placeholder="Persona o empresa">
+          <button type="button" class="btn-add-ins" onclick="agregarSolicitanteCustom()">Añadir y seleccionar</button>
+        </div>
+      </details>
     </div>
 
     <div class="form-group">
@@ -1156,15 +1248,7 @@
       <span id="calMesLabel" style="font-family:'DM Serif Display',serif;font-size:17px;color:var(--text)"></span>
       <button class="btn-sync" onclick="cambiarMes(1)" style="font-size:18px;padding:4px 10px">›</button>
     </div>
-    <div style="display:flex;gap:5px;overflow-x:auto;padding:0 12px 10px;scrollbar-width:none">
-      <div class="tab active" id="cfTodos" onclick="setCalFiltro('todos',this)">Todos</div>
-      <div class="tab" id="cfFran" onclick="setCalFiltro('fran',this)">Fran</div>
-      <div class="tab" id="cfJulio" onclick="setCalFiltro('julio',this)">Julio</div>
-      <div class="tab" id="cfPpaa" onclick="setCalFiltro('ppaa',this)">PPAA</div>
-      <div class="tab" id="cfDesa" onclick="setCalFiltro('desa',this)">DESA</div>
-      <div class="tab" id="cfSvb" onclick="setCalFiltro('svb',this)">SVB</div>
-      <div class="tab" id="cfPend" onclick="setCalFiltro('pendiente',this)">Pendientes</div>
-    </div>
+    <div id="mobileCalFilters" class="calendar-filters"></div>
   </div>
   <div id="calGrid" style="padding:12px 12px 20px"></div>
 </div>
@@ -1231,7 +1315,7 @@ function tipoKey(v) {
   return 'otro';
 }
 
-let cursos = [], filtroActivo = 'todos', editandoId = null;
+let cursos = [], filtroActivo = 'pendiente', editandoId = null;
 let instructorSel = '', solicitanteSel = '', usuarioActual = '';
 let gapiOk = false, gisOk = false, tokenClient = null, syncTimer = null;
 let INSTRUCTORES = ['Fran Álvarez','Julio','Tere','Sin instructor'];
@@ -1288,6 +1372,7 @@ function mostrarApp() {
   document.getElementById('syncUser').textContent = '👤 ' + usuarioActual;
   setSyncSyncing('Cargando…');
   cargarTema();
+  applyDesktopInspectorPreference();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1502,6 +1587,7 @@ function getFilteredCursos() {
   else if (filtroActivo === 'realizado') datos = datos.filter(c => c.realizado);
   else if (filtroActivo === 'fran')      datos = datos.filter(c => !c.realizado && c.instructor?.toLowerCase().includes('fran'));
   else if (filtroActivo === 'julio')     datos = datos.filter(c => !c.realizado && c.instructor?.toLowerCase().includes('julio'));
+  else if (filtroActivo.startsWith('instructor:')) datos = datos.filter(c => !c.realizado && instructorKey(c.instructor) === filtroActivo.slice(11));
   else if (filtroActivo === 'ppaa')      datos = datos.filter(c => tipoKey(c.curso)==='ppaa');
   else if (filtroActivo === 'desa')      datos = datos.filter(c => tipoKey(c.curso)==='desa');
   else if (filtroActivo === 'svb')       datos = datos.filter(c => tipoKey(c.curso)==='svb');
@@ -1598,6 +1684,10 @@ function toggleDesktopSidebar() {
 
 function setDesktopView(view) {
   desktopView = view;
+  renderExtraInstructorTabs();
+  document.querySelectorAll('.header .tab').forEach(t => {
+    if (view === 'calendario') t.classList.toggle('active', t.textContent.includes('Mes'));
+  });
   document.getElementById('desktopViewList')?.classList.toggle('active', view === 'lista');
   document.getElementById('desktopViewCalendar')?.classList.toggle('active', view === 'calendario');
   document.getElementById('desktopListPanel').style.display = view === 'lista' ? 'block' : 'none';
@@ -1624,6 +1714,7 @@ function cambiarMesDesktop(delta) {
   calMes += delta;
   if (calMes > 11) { calMes = 0; calAnyo++; }
   if (calMes < 0)  { calMes = 11; calAnyo--; }
+  renderExtraInstructorTabs();
   renderDesktop(getFilteredCursos());
 }
 
@@ -1657,7 +1748,7 @@ function renderDesktop(datosBase) {
     <div class="desktop-kpi"><div class="label">Horas pendientes</div><div class="value">${horasPend.toFixed(1)}</div></div>`;
 
   const titleMap = {todos:'Todos los cursos',pendiente:'Pendientes',realizado:'Realizados',fran:'Pendientes · Fran',julio:'Pendientes · Julio',ppaa:'PPAA',desa:'DESA',svb:'SVB',otro:'Otros'};
-  document.getElementById('desktopSectionTitle').textContent = titleMap[filtroActivo] || 'Cursos';
+  document.getElementById('desktopSectionTitle').textContent = desktopView === 'calendario' ? 'Calendario mensual' : titleMap[filtroActivo] || (filtroActivo.startsWith('instructor:') ? 'Pendientes · ' + instructorDisplay(filtroActivo.slice(11)) : 'Cursos');
 
   const datos = sortDesktopCursos(desktopVisibleCursos(datosBase));
   updateDesktopSortUi(datos.length);
@@ -1714,7 +1805,8 @@ function renderDesktopCalendar(datosBase) {
   const diasMes = new Date(calAnyo, calMes + 1, 0).getDate();
   const hoy = new Date();
   const porDia = {};
-  datosBase.forEach(c => {
+  renderCalendarFilters();
+  desktopVisibleCursos(calendarFilteredCursos()).forEach(c => {
     const k = fechaStr(c.fecha); if (!k) return;
     const d = new Date(k + 'T12:00');
     if (d.getMonth() === calMes && d.getFullYear() === calAnyo) {
@@ -1728,12 +1820,12 @@ function renderDesktopCalendar(datosBase) {
     const key = `${calAnyo}-${String(calMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const cs = porDia[key] || [];
     const today = hoy.getDate()===d && hoy.getMonth()===calMes && hoy.getFullYear()===calAnyo;
-    html += `<div class="desktop-cal-cell ${today?'today':''}" onclick="${cs[0] ? `selectDesktop(${cursos.indexOf(cs[0])})` : ''}">
+    html += `<div class="desktop-cal-cell ${today?'today':''}">
       <div class="desktop-cal-num">${d}</div>
-      ${cs.slice(0,4).map(c => `<span class="desktop-event ${tipoKey(c.curso)}">${escHtml((c.inicio?c.inicio+' ':'') + (c.curso || 'Curso'))}${!c.instructor?' !':''}</span>`).join('')}
-      ${cs.length>4 ? `<span class="desktop-event otro">+${cs.length-4} más</span>` : ''}
+      ${cs.map(c => calendarEventHtml(c, false)).join('')}
     </div>`;
   }
+
   el.innerHTML = html;
 }
 
@@ -1781,6 +1873,8 @@ function renderDesktopInspector() {
 // RENDER
 // ══════════════════════════════════════════════════════════════
 function render() {
+  renderExtraInstructorTabs();
+  if (vistaCalendario) renderCalendario();
   let datos = getFilteredCursos();
 
   const realizados = cursos.filter(c=>c.realizado).length;
@@ -1868,12 +1962,15 @@ function calcH(ini,fin) {
 }
 
 function filtrar(tipo, el) {
+  vistaCalendario = false;
+  document.getElementById('calView').style.display = 'none';
+  document.getElementById('listaView').style.display = 'block';
   filtroActivo = tipo;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   if (window.matchMedia('(min-width: 980px)').matches) setDesktopView('lista');
   const t={todos:'Todos los cursos',pendiente:'Pendientes',realizado:'Realizados',fran:'Pendientes · Fran',julio:'Pendientes · Julio',ppaa:'PPAA',desa:'DESA',svb:'SVB',otro:'Otros'};
-  document.getElementById('sectionTitle').textContent = t[tipo]||tipo;
+  document.getElementById('sectionTitle').textContent = t[tipo] || (tipo.startsWith('instructor:') ? 'Pendientes · '+instructorDisplay(tipo.slice(11)) : tipo);
   render();
 }
 
@@ -1894,6 +1991,10 @@ function abrirModal(d=null) {
   document.getElementById('fRealizado').checked = c?.realizado    || false;
   instructorSel = c?.instructor || '';
   solicitanteSel = c?.solicitante || '';
+  document.getElementById('newInstructorDetails').open=false;
+  document.getElementById('newSolicitanteDetails').open=false;
+  document.getElementById('nuevoInstructor').value='';
+  document.getElementById('nuevoSolicitante').value='';
   calcularHoras(); renderInstructores(); renderSolicitantes();
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1940,9 +2041,8 @@ function calcularHoras() {
 }
 
 function renderInstructores() {
-  document.getElementById('instructorList').innerHTML = INSTRUCTORES.map(i=>
-    `<div class="instructor-chip ${instructorSel===i?'selected':''}" onclick="selIns('${i}')">${i}</div>`
-  ).join('');
+  renderAssignmentSelect('instructorList', 'fInstructorSelect', INSTRUCTORES, instructorSel, 'Sin instructor', n => { instructorSel=n; renderInstructores(); });
+  document.getElementById('instructorAssignment').textContent = instructorSel && instructorSel !== 'Sin instructor' ? '✓ Asignado a ' + instructorSel : 'Sin instructor asignado';
 }
 
 function selIns(n) { instructorSel = instructorSel===n?'':n; renderInstructores(); }
@@ -1950,15 +2050,12 @@ function selIns(n) { instructorSel = instructorSel===n?'':n; renderInstructores(
 function agregarInstructorCustom() {
   const inp=document.getElementById('nuevoInstructor'), n=inp.value.trim(); if(!n) return;
   if(!INSTRUCTORES.includes(n)) INSTRUCTORES.unshift(n);
-  instructorSel=n; inp.value=''; renderInstructores();
+  instructorSel=n; inp.value=''; renderInstructores(); document.getElementById('newInstructorDetails').open=false;
 }
 
 function renderSolicitantes() {
-  const el = document.getElementById('solicitanteList');
-  if (!el) return;
-  el.innerHTML = SOLICITANTES.map(s=>
-    `<div class="instructor-chip ${solicitanteSel===s?'selected':''}" onclick="selSol('${s.replace(/'/g,"\'")}')">${s}</div>`
-  ).join('');
+  renderAssignmentSelect('solicitanteList', 'fSolicitanteSelect', SOLICITANTES, solicitanteSel, 'Sin solicitante', n => { solicitanteSel=n; renderSolicitantes(); });
+  document.getElementById('solicitanteAssignment').textContent = solicitanteSel && solicitanteSel !== 'Sin solicitante' ? '✓ Solicitado por ' + solicitanteSel : 'Sin solicitante seleccionado';
 }
 
 function selSol(n) { solicitanteSel = solicitanteSel===n?'':n; renderSolicitantes(); }
@@ -1966,7 +2063,7 @@ function selSol(n) { solicitanteSel = solicitanteSel===n?'':n; renderSolicitante
 function agregarSolicitanteCustom() {
   const inp=document.getElementById('nuevoSolicitante'), n=inp.value.trim(); if(!n) return;
   if(!SOLICITANTES.includes(n)) SOLICITANTES.unshift(n);
-  solicitanteSel=n; inp.value=''; renderSolicitantes();
+  solicitanteSel=n; inp.value=''; renderSolicitantes(); document.getElementById('newSolicitanteDetails').open=false;
 }
 
 async function guardarCurso() {
@@ -2210,27 +2307,24 @@ let vistaCalendario = false;
 let calFiltro = 'todos';
 
 function mostrarCalendario() {
-  vistaCalendario = !vistaCalendario;
-  document.getElementById('calView').style.display = vistaCalendario ? 'block' : 'none';
-  document.getElementById('listaView').style.display = vistaCalendario ? 'none' : 'block';
-  // marcar tab activo
-  document.querySelectorAll('.tab').forEach(t => {
-    if (t.textContent.includes('Mes')) t.classList.toggle('active', vistaCalendario);
-  });
-  if (vistaCalendario) renderCalendario();
+  vistaCalendario = true;
+  document.getElementById('calView').style.display = 'block';
+  document.getElementById('listaView').style.display = 'none';
+  document.querySelectorAll('.header .tab').forEach(t => t.classList.toggle('active', t.textContent.includes('Mes')));
+  renderCalendario();
 }
 
 function setCalFiltro(f, el) {
   calFiltro = f;
-  document.querySelectorAll('#calView .tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
   renderCalendario();
+  renderDesktopCalendar(getFilteredCursos());
 }
 
 function cambiarMes(d) {
   calMes += d;
   if (calMes > 11) { calMes = 0; calAnyo++; }
   if (calMes < 0)  { calMes = 11; calAnyo--; }
+  renderExtraInstructorTabs();
   renderCalendario();
 }
 
@@ -2254,14 +2348,8 @@ function renderCalendario() {
   // Ajustar para que semana empiece en lunes
   const offset = (primerDia + 6) % 7;
 
-  // Aplicar filtro de calendario
-  let cursosFiltrados = [...cursos];
-  if (calFiltro === 'fran')      cursosFiltrados = cursosFiltrados.filter(c => !c.realizado && c.instructor?.toLowerCase().includes('fran'));
-  else if (calFiltro === 'julio')     cursosFiltrados = cursosFiltrados.filter(c => !c.realizado && c.instructor?.toLowerCase().includes('julio'));
-  else if (calFiltro === 'ppaa')      cursosFiltrados = cursosFiltrados.filter(c => tipoKey(c.curso)==='ppaa');
-  else if (calFiltro === 'desa')      cursosFiltrados = cursosFiltrados.filter(c => tipoKey(c.curso)==='desa');
-  else if (calFiltro === 'svb')       cursosFiltrados = cursosFiltrados.filter(c => tipoKey(c.curso)==='svb');
-  else if (calFiltro === 'pendiente') cursosFiltrados = cursosFiltrados.filter(c => !c.realizado);
+  renderCalendarFilters();
+  const cursosFiltrados = calendarFilteredCursos();
 
   // Agrupar cursos por día
   const porDia = {};
@@ -2302,15 +2390,7 @@ function renderCalendario() {
     const cs = porDia[key] || [];
     const tieneConflicto = conflictos.has(key);
 
-    let dotHtml = '';
-    cs.forEach(c => {
-      const tk = tipoKey(c.curso);
-      const real = c.realizado ? ' realizado' : '';
-      const label = (c.curso||'').substring(0,4);
-      const sinIns = !c.instructor ? ' title="Sin instructor"' : '';
-      dotHtml += `<div class="cal-dot ${tk}${real}"${sinIns}>${label}${!c.instructor?'⚠':''}`;
-      dotHtml += `</div>`;
-    });
+    const dotHtml = cs.map(c => calendarEventHtml(c, true)).join('');
 
     const tieneSinIns = cs.some(c => !c.instructor && !c.realizado);
     html += `<div class="cal-cell ${cs.length?'tiene-cursos':''} ${esHoy?'hoy':''}"
@@ -2369,6 +2449,7 @@ function renderCalendario() {
     html += `<div style="padding:4px 0 8px;display:flex;flex-direction:column;gap:6px">${avisos.join('')}</div>`;
   }
 
+  html += calendarInstructorLegend();
   document.getElementById('calGrid').innerHTML = html;
 }
 
@@ -2645,6 +2726,104 @@ function cargarTema() {
   }
 }
 
+// Presentation helpers: no changes to the Google Sheets data schema.
+function instructorKey(name) {
+  const n = String(name || '').trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g,' ');
+  if (!n || n === 'sin instructor') return '';
+  if (/^(fran|francisco)(\s|$)/.test(n)) return 'fran';
+  if (/^julio(\s|$)/.test(n)) return 'julio';
+  return n;
+}
+function instructorDisplay(key) {
+  if (key === 'fran') return 'Fran';
+  if (key === 'julio') return 'Julio';
+  return cursos.find(c => instructorKey(c.instructor) === key)?.instructor || key;
+}
+function monthInstructors() {
+  const result = new Map([['fran','Fran'],['julio','Julio']]);
+  cursos.forEach(c => {
+    const d = new Date(fechaStr(c.fecha)+'T12:00');
+    const key = instructorKey(c.instructor);
+    if (key && d.getMonth() === calMes && d.getFullYear() === calAnyo && !result.has(key)) result.set(key, String(c.instructor).trim());
+  });
+  return result;
+}
+function instructorBadge(name, compact=false) {
+  const key = instructorKey(name);
+  if (!key) return '<span class="course-instructor unassigned">'+(compact?'S/I':'Sin instructor')+'</span>';
+  const palette = ['#7341ab','#a34b00','#006b73','#a12655','#2c5e9a','#635013','#5149a3','#375b36'];
+  let hash = 0; for (const ch of key) hash = ((hash * 31) + ch.charCodeAt(0)) >>> 0;
+  const color = key === 'fran' ? palette[0] : key === 'julio' ? palette[1] : palette[2 + hash % (palette.length-2)];
+  const words = String(name).trim().split(/\s+/);
+  const initials = key === 'fran' ? 'FA' : key === 'julio' ? 'JU' : words.length > 1 ? words[0][0]+words[1][0] : words[0].slice(0,2);
+  return `<span class="course-instructor" style="--instructor-color:${color}" title="${escHtml(name)}">${escHtml(compact ? initials.toUpperCase() : name)}</span>`;
+}
+function calendarEventHtml(c, mobile) {
+  const idx = cursos.indexOf(c);
+  const label = `${c.curso || 'Curso'} · ${c.instructor || 'Sin instructor'} · ${c.inicio || ''}–${c.fin || ''} · ${c.lugar || ''}`;
+  return `<button type="button" class="${mobile?'cal-dot':'desktop-event'} ${tipoKey(c.curso)}${c.realizado?' realizado':''}" aria-label="${escHtml(label)}" title="${escHtml(label)}" onclick="event.stopPropagation();verDetalle(${idx})">
+    <span class="calendar-course-type">${escHtml(c.curso || 'Curso')}${c.realizado?' ✓':''}</span>
+    ${mobile?'':`<span class="calendar-course-info">${escHtml(c.inicio || '')}${c.fin?'–'+escHtml(c.fin):''}<br>${escHtml(c.lugar || '')}</span>`}
+    ${instructorBadge(c.instructor, mobile)}
+  </button>`;
+}
+function calendarFilteredCursos() {
+  let data = [...cursos];
+  if (calFiltro === 'pendiente') return data.filter(c => !c.realizado);
+  if (calFiltro === 'realizado') return data.filter(c => c.realizado);
+  if (calFiltro === 'fran' || calFiltro === 'julio' || calFiltro.startsWith('instructor:')) {
+    const key = calFiltro.startsWith('instructor:') ? calFiltro.slice(11) : calFiltro;
+    return data.filter(c => instructorKey(c.instructor) === key);
+  }
+  if (['ppaa','desa','svb','tpc','amv','otro'].includes(calFiltro)) return data.filter(c => tipoKey(c.curso) === calFiltro);
+  return data;
+}
+function calendarInstructorLegend() {
+  return '<div class="calendar-instructor-legend"><span>Instructores</span>'+Array.from(monthInstructors(),([k,n])=>'<span class="instructor-legend-item">'+instructorBadge(n,true)+' '+escHtml(n)+'</span>').join('')+'</div>';
+}
+function renderCalendarFilters() {
+  const instructors = monthInstructors();
+  if (calFiltro.startsWith('instructor:') && !instructors.has(calFiltro.slice(11))) calFiltro='todos';
+  const filters = [['todos','Todos'],['pendiente','Pendientes'],...Array.from(instructors,([k,n])=>[k==='fran'||k==='julio'?k:'instructor:'+k,n]),['ppaa','PPAA'],['desa','DESA'],['svb','SVB'],['tpc','TPC'],['amv','AMV'],['otro','Otro']];
+  ['mobileCalFilters','desktopCalFilters'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    el.replaceChildren(...filters.map(([key,label])=>{
+      const b=document.createElement('button'); b.type='button'; b.className='tab'+(calFiltro===key?' active':'');
+      b.textContent=label; b.setAttribute('aria-pressed',String(calFiltro===key)); b.onclick=()=>setCalFiltro(key,b); return b;
+    }));
+  });
+  document.getElementById('desktopCalLegend').innerHTML=calendarInstructorLegend();
+}
+function renderExtraInstructorTabs() {
+  const el=document.getElementById('extraInstructorTabs');
+  el.replaceChildren(...Array.from(monthInstructors()).filter(([k])=>k!=='fran'&&k!=='julio').map(([key,name])=>{
+    const b=document.createElement('button'); b.type='button'; b.className='tab'+(filtroActivo==='instructor:'+key&&!vistaCalendario&&desktopView!=='calendario'?' active':'');
+    b.textContent='📋 '+name; b.onclick=()=>filtrar('instructor:'+key,b); return b;
+  }));
+}
+function renderAssignmentSelect(container, id, options, current, emptyLabel, onChange) {
+  const select=document.createElement('select'); select.id=id; select.className='form-select';
+  select.add(new Option(emptyLabel,''));
+  const names=[...new Set([...options,...(current?[current]:[])])];
+  names.forEach(name=>{if(name && (name!==emptyLabel || current===name))select.add(new Option(name,name));});
+  select.value=current || ''; select.onchange=()=>onChange(select.value);
+  document.getElementById(container).replaceChildren(select);
+}
+function setDesktopInspectorHidden(hidden) {
+  document.body.classList.toggle('desktop-inspector-hidden',hidden);
+  const button=document.getElementById('desktopInspectorToggle');
+  button.textContent=hidden?'Mostrar panel derecho':'Ocultar panel derecho';
+  button.setAttribute('aria-expanded',String(!hidden));
+}
+function toggleDesktopInspector() {
+  const hidden=!document.body.classList.contains('desktop-inspector-hidden');
+  setDesktopInspectorHidden(hidden);
+  try {localStorage.setItem('cursos_inspector_hidden',String(hidden));} catch(e) {}
+}
+function applyDesktopInspectorPreference() {
+  try {setDesktopInspectorHidden(localStorage.getItem('cursos_inspector_hidden')==='true');} catch(e) {}
+}
+
 // EVENT DELEGATION — iOS Safari compatible
 document.addEventListener('click', function(e) {
   const el = e.target.closest('[data-action]');
@@ -2661,8 +2840,10 @@ document.addEventListener('click', function(e) {
   else if (action === 'del')    eliminarCurso(idx);
   else if (action === 'factura') crearFactura(idx);
   else if (action === 'check')  toggleCheck(e, idx, campo);
+  else if (action === 'calendar-course') verDetalle(idx);
 });
 
 </script>
 </body>
 </html>
+
