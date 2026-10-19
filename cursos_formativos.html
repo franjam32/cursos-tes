@@ -967,6 +967,103 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
   .calendar-filters .tab {padding:7px 9px;min-height:42px;}
 }
 
+
+/* Desktop workspace: compact chrome, viewport-sized primary content. */
+@media(min-width:980px) {
+  body {height:100dvh;min-height:0;overflow:hidden;padding-bottom:0;}
+  #app {height:100dvh;min-height:0;grid-template-columns:184px minmax(0,1fr);grid-template-rows:24px minmax(0,1fr);}
+  .sync-bar {padding:3px 10px;min-height:24px;font-size:10px;}
+  .header {top:0;height:100%;min-height:0;padding:12px 9px;gap:10px;overflow-y:auto;}
+  .logo {font-size:21px;margin-bottom:9px;}
+  .header-actions {gap:4px;}
+  .header .btn-icono,.header .btn-nuevo {min-height:30px;padding:5px 8px;font-size:12px;}
+  .header .tabs {gap:4px;}
+  .header .tab {min-height:29px;padding:5px 8px;font-size:12px;}
+  .desktop-workspace,body.desktop-nav-collapsed .desktop-workspace {height:100%;min-height:0;max-width:none;padding:8px 10px;gap:6px;grid-template-rows:auto auto minmax(0,1fr);}
+  .desktop-topbar {gap:8px;align-items:center;}
+  .desktop-title-block h1 {font-size:21px;line-height:1.1;margin:0;}
+  .desktop-title-block p {display:none;}
+  .desktop-actions {gap:5px;flex-wrap:wrap;}
+  .desktop-actions .btn-icono,.desktop-actions .btn-nuevo {min-height:30px;padding:5px 9px;font-size:12px;}
+  .desktop-kpis {display:flex;flex-wrap:wrap;gap:5px;}
+  .desktop-kpi {display:flex;align-items:baseline;gap:6px;padding:4px 9px;min-height:0;border-radius:5px;box-shadow:none!important;}
+  .desktop-kpi .label {margin:0;font-size:10px;letter-spacing:.3px;}
+  .desktop-kpi .value {font-family:inherit;font-size:15px;font-weight:600;line-height:1.1;}
+  .desktop-shell {min-height:0;height:100%;grid-template-columns:minmax(0,1fr) 250px;gap:8px;align-items:stretch;}
+  .desktop-main {display:flex;flex-direction:column;min-height:0;height:100%;}
+  .desktop-main>.desktop-main-head {flex:0 0 auto;padding:6px 8px;min-height:0;gap:5px;}
+  .desktop-main-head {min-height:0;}
+  .desktop-filter-row {flex:1;gap:5px;}
+  .desktop-search {width:min(280px,100%);min-height:29px;padding:5px 8px;font-size:12px;flex:1;}
+  .desktop-chip {min-height:29px;padding:5px 8px;font-size:12px;}
+  .desktop-section-title {font-size:11px;letter-spacing:.3px;}
+  #desktopSectionTitle {font-size:10px;}
+  #desktopListPanel {flex:1;min-height:0;overflow:hidden;}
+  #desktopListPanel:not([style*="none"]) {display:flex!important;flex-direction:column;}
+  .desktop-table-tools {flex:0 0 auto;min-height:0;padding:5px 8px;gap:5px;}
+  .desktop-sort-controls {gap:5px;}
+  .desktop-sort-label,.desktop-table-count {font-size:10px;}
+  .desktop-sort-select {min-height:27px;min-width:110px;padding:4px 6px;font-size:11px;}
+  .desktop-table-wrap {flex:1;min-height:0;max-height:none;overflow:auto;}
+  .desktop-table,body.desktop-inspector-hidden .desktop-table {min-width:0;width:100%;table-layout:fixed;}
+  .desktop-table th {font-size:9px;letter-spacing:0;padding:6px 5px;}
+  .desktop-th-btn {padding:6px 5px;min-height:29px;gap:2px;}
+  .desktop-table td,body.desktop-inspector-hidden .desktop-table td {padding:7px 5px;font-size:11px;overflow-wrap:anywhere;}
+  .desktop-table th:nth-child(1) {width:10%;}.desktop-table th:nth-child(2) {width:10%;}
+  .desktop-table th:nth-child(3) {width:8%;}.desktop-table th:nth-child(4) {width:18%;}
+  .desktop-table th:nth-child(5),.desktop-table th:nth-child(6) {width:12%;}
+  .desktop-table th:nth-child(7) {width:7%;}.desktop-table th:nth-child(8) {width:10%;}.desktop-table th:nth-child(9) {width:13%;}
+  .desktop-date strong,.desktop-place strong {font-size:12px;}
+  .desktop-date span {display:none;}
+  .desktop-place span {display:block;overflow:visible;font-size:11px;-webkit-line-clamp:unset;}
+  .desktop-course span {font-size:11px;white-space:normal;}
+  .desktop-docs {min-width:0;}.desktop-docs-text {font-size:10px;}
+  .desktop-status {white-space:normal;padding:3px 4px;font-size:10px;}
+  .desktop-row-actions {gap:3px;flex-wrap:wrap;}
+  .desktop-row-actions .desktop-icon-btn {padding:4px;min-height:26px;font-size:10px;}
+  #desktopCalendarPanel {flex:1;min-height:0;overflow:hidden;}
+  #desktopCalendarPanel:not([style*="none"]) {display:flex!important;flex-direction:column;}
+  #desktopCalendarPanel>.desktop-main-head {padding:4px 8px;min-height:0;flex-shrink:0;}
+  #desktopCalTitle {font-size:14px;text-transform:capitalize;}
+  #desktopCalendarPanel .desktop-icon-btn {min-height:26px;padding:3px 9px;}
+  #desktopCalFilters {padding:4px 8px;gap:4px;flex-shrink:0;}
+  #desktopCalFilters .tab {min-height:25px;padding:3px 7px;font-size:11px;}
+  .desktop-calendar {flex:1;min-height:0;gap:3px;padding:3px 8px;grid-template-rows:18px repeat(var(--calendar-weeks,5),minmax(0,1fr));overflow:hidden;}
+  .desktop-cal-dayname {padding:1px;font-size:10px;}
+  .desktop-cal-cell {height:auto;min-height:0;min-width:0;padding:3px;overflow:auto;scrollbar-width:thin;}
+  .desktop-cal-num {font-size:11px;margin-bottom:2px;}
+  .desktop-event {display:block;padding:3px 4px;margin-bottom:3px;font-size:11px;line-height:1.25;border-radius:4px;}
+  .desktop-event .calendar-course-type {display:inline;}
+  .desktop-event .calendar-course-info {display:inline;margin-left:4px;}
+  .desktop-event .course-instructor {display:table;}
+  .desktop-event .calendar-course-info {font-size:10px;line-height:1.25;}
+  .desktop-event .course-instructor {font-size:10px;padding:1px 4px;margin-top:2px;}
+  #desktopCalLegend {padding:0 8px;flex-shrink:0;}
+  .calendar-instructor-legend {font-size:10px;padding:3px 0;gap:6px;}
+  .calendar-instructor-legend .course-instructor {font-size:10px;padding:1px 4px;}
+  .desktop-side {height:100%;min-height:0;overflow:auto;scrollbar-width:thin;}
+  .desktop-side-head {padding:7px 9px;min-height:0;}
+  .desktop-inspector {padding:9px;gap:8px;}
+  .desktop-inspector-title {font-size:16px;}.desktop-inspector-sub {font-size:11px;}
+  .desktop-detail-grid {gap:5px;}.desktop-detail {padding:6px;}.desktop-detail div {font-size:11px;}
+  .desktop-check {padding:6px;min-height:30px;font-size:11px;}
+  .desktop-panel-actions {gap:5px;}.desktop-panel-actions .btn-accion {font-size:11px;padding:6px;}
+  @media(max-height:700px) {
+    .desktop-workspace {gap:4px;padding:5px 7px;}
+    .desktop-title-block h1 {font-size:18px;}
+    .desktop-kpi {padding:2px 7px;}
+    .desktop-kpi .value {font-size:13px;}
+    .desktop-event .calendar-course-info {display:inline;}
+    .desktop-event .calendar-course-info br {display:none;}
+  }
+}
+
+@media(min-width:980px) {
+  .desktop-cal-cell {overflow:hidden;}
+  .desktop-event[hidden],.desktop-more-courses[hidden] {display:none;}
+  .desktop-day-count {float:right;font-size:9px;font-weight:400;color:var(--muted);}
+  .desktop-more-courses {display:block;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);font:600 10px/1.3 'DM Sans',sans-serif;padding:3px 5px;width:100%;text-align:left;cursor:pointer;}
+}
 </style>
 </head>
 <body>
@@ -1038,7 +1135,7 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
         <p>Planificación de cursos TES: alta, asignación de docentes, seguimiento documental, avisos y facturación desde una vista de escritorio.</p>
       </div>
       <div class="desktop-actions">
-        <button class="btn-icono" id="desktopNavToggle" onclick="toggleDesktopSidebar()" title="Ocultar menú lateral">⇤</button>
+        <button class="btn-icono" id="desktopPanelsToggle" onclick="toggleDesktopPanels()" aria-expanded="true" aria-controls="courseInspectorPanel" title="Mostrar u ocultar ambos paneles laterales">Ocultar paneles</button>
         <button class="btn-icono" onclick="sincronizar()" title="Sincronizar">↺</button>
         <button class="btn-icono" onclick="exportarExcel()" title="Exportar Excel">📤</button>
         <button class="btn-nuevo" onclick="abrirModal()">+ Nuevo curso</button>
@@ -1054,7 +1151,7 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
             <input class="desktop-search" id="desktopSearch" type="search" placeholder="Buscar por curso, lugar, solicitante o instructor…" oninput="render()">
             <button class="desktop-chip active" id="desktopViewList" onclick="setDesktopView('lista')">Listado</button>
             <button class="desktop-chip" id="desktopViewCalendar" onclick="setDesktopView('calendario')">Calendario</button>
-            <button class="desktop-chip" id="desktopInspectorToggle" onclick="toggleDesktopInspector()" aria-expanded="true" aria-controls="courseInspectorPanel">Ocultar panel derecho</button>
+
           </div>
           <div class="desktop-section-title" id="desktopSectionTitle">Todos los cursos</div>
         </div>
@@ -1673,14 +1770,7 @@ function toggleDesktopSortDir() {
   renderDesktop(getFilteredCursos());
 }
 
-function toggleDesktopSidebar() {
-  const collapsed = document.body.classList.toggle('desktop-nav-collapsed');
-  const btn = document.getElementById('desktopNavToggle');
-  if (btn) {
-    btn.textContent = collapsed ? '☰' : '⇤';
-    btn.title = collapsed ? 'Mostrar menú lateral' : 'Ocultar menú lateral';
-  }
-}
+function toggleDesktopSidebar() { toggleDesktopPanels(); }
 
 function setDesktopView(view) {
   desktopView = view;
@@ -1786,6 +1876,7 @@ function renderDesktopRows(datos) {
       <td>
         <div class="desktop-row-actions">
           <button class="desktop-icon-btn" data-action="editar" data-idx="${idx}" title="Editar">Editar</button>
+          <button class="desktop-icon-btn" data-action="duplicar" data-idx="${idx}" title="Crear una copia como nuevo curso">Duplicar</button>
           <button class="desktop-icon-btn" data-action="avisar" data-idx="${idx}" title="Avisar">Avisar</button>
           <button class="desktop-icon-btn" data-action="factura" data-idx="${idx}" title="Factura">Fact.</button>
         </div>
@@ -1803,6 +1894,7 @@ function renderDesktopCalendar(datosBase) {
   const primerDia = new Date(calAnyo, calMes, 1).getDay();
   const offset = (primerDia + 6) % 7;
   const diasMes = new Date(calAnyo, calMes + 1, 0).getDate();
+  el.style.setProperty('--calendar-weeks', Math.ceil((offset + diasMes) / 7));
   const hoy = new Date();
   const porDia = {};
   renderCalendarFilters();
@@ -1821,12 +1913,14 @@ function renderDesktopCalendar(datosBase) {
     const cs = porDia[key] || [];
     const today = hoy.getDate()===d && hoy.getMonth()===calMes && hoy.getFullYear()===calAnyo;
     html += `<div class="desktop-cal-cell ${today?'today':''}">
-      <div class="desktop-cal-num">${d}</div>
+      <div class="desktop-cal-num">${d}${cs.length ? `<span class="desktop-day-count">${cs.length} curso${cs.length===1?'':'s'}</span>` : ''}</div>
       ${cs.map(c => calendarEventHtml(c, false)).join('')}
+      ${cs.length ? `<button type="button" class="desktop-more-courses" hidden onclick="mostrarDiaDetalle('${key}')"></button>` : ''}
     </div>`;
   }
 
   el.innerHTML = html;
+  requestAnimationFrame(fitDesktopCalendar);
 }
 
 function renderDesktopInspector() {
@@ -1978,6 +2072,7 @@ function filtrar(tipo, el) {
 // FORMULARIO
 // ══════════════════════════════════════════════════════════════
 function abrirModal(d=null) {
+  document.getElementById('btnGuardar').textContent = 'Guardar curso';
   editandoId = d !== null ? d : null;
   const c = d !== null ? cursos[d] : null;
   document.getElementById('modalTitle').textContent = c ? 'Editar curso' : 'Nuevo curso';
@@ -2763,7 +2858,7 @@ function calendarEventHtml(c, mobile) {
   const label = `${c.curso || 'Curso'} · ${c.instructor || 'Sin instructor'} · ${c.inicio || ''}–${c.fin || ''} · ${c.lugar || ''}`;
   return `<button type="button" class="${mobile?'cal-dot':'desktop-event'} ${tipoKey(c.curso)}${c.realizado?' realizado':''}" aria-label="${escHtml(label)}" title="${escHtml(label)}" onclick="event.stopPropagation();verDetalle(${idx})">
     <span class="calendar-course-type">${escHtml(c.curso || 'Curso')}${c.realizado?' ✓':''}</span>
-    ${mobile?'':`<span class="calendar-course-info">${escHtml(c.inicio || '')}${c.fin?'–'+escHtml(c.fin):''}<br>${escHtml(c.lugar || '')}</span>`}
+    ${mobile?'':`<span class="calendar-course-info">${escHtml(c.inicio || '')}${c.fin?'–'+escHtml(c.fin):''}</span>`}
     ${instructorBadge(c.instructor, mobile)}
   </button>`;
 }
@@ -2809,19 +2904,56 @@ function renderAssignmentSelect(container, id, options, current, emptyLabel, onC
   select.value=current || ''; select.onchange=()=>onChange(select.value);
   document.getElementById(container).replaceChildren(select);
 }
-function setDesktopInspectorHidden(hidden) {
-  document.body.classList.toggle('desktop-inspector-hidden',hidden);
-  const button=document.getElementById('desktopInspectorToggle');
-  button.textContent=hidden?'Mostrar panel derecho':'Ocultar panel derecho';
-  button.setAttribute('aria-expanded',String(!hidden));
+function setDesktopPanelsHidden(hidden) {
+  document.body.classList.toggle('desktop-nav-collapsed', hidden);
+  document.body.classList.toggle('desktop-inspector-hidden', hidden);
+  const button = document.getElementById('desktopPanelsToggle');
+  button.textContent = hidden ? 'Mostrar paneles' : 'Ocultar paneles';
+  button.setAttribute('aria-expanded', String(!hidden));
 }
-function toggleDesktopInspector() {
-  const hidden=!document.body.classList.contains('desktop-inspector-hidden');
-  setDesktopInspectorHidden(hidden);
-  try {localStorage.setItem('cursos_inspector_hidden',String(hidden));} catch(e) {}
+function toggleDesktopPanels() {
+  const hidden = !document.body.classList.contains('desktop-nav-collapsed');
+  setDesktopPanelsHidden(hidden);
+  try { localStorage.setItem('cursos_panels_hidden', String(hidden)); } catch(e) {}
 }
 function applyDesktopInspectorPreference() {
-  try {setDesktopInspectorHidden(localStorage.getItem('cursos_inspector_hidden')==='true');} catch(e) {}
+  try {
+    const saved = localStorage.getItem('cursos_panels_hidden');
+    setDesktopPanelsHidden(saved === null ? localStorage.getItem('cursos_inspector_hidden') === 'true' : saved === 'true');
+  } catch(e) {}
+}
+function duplicarCurso(idx) {
+  if (!cursos[idx]) return;
+  cerrarDetalle();
+  abrirModal(idx);
+  // Reuse editable course details, but save as a new course with a new ID/row.
+  editandoId = null;
+  document.getElementById('modalTitle').textContent = 'Duplicar curso';
+  document.getElementById('fRealizado').checked = false;
+  document.getElementById('btnGuardar').textContent = 'Guardar copia';
+}
+
+function fitDesktopCalendar() {
+  if (!window.matchMedia('(min-width:980px)').matches) return;
+  document.querySelectorAll('#desktopCalendar .desktop-cal-cell').forEach(cell => {
+    if (!cell.clientHeight) return;
+    const events = [...cell.querySelectorAll('.desktop-event')];
+    const more = cell.querySelector('.desktop-more-courses');
+    if (!more) return;
+    events.forEach(e => e.hidden=false);
+    more.hidden=true;
+    const space = cell.clientHeight - cell.querySelector('.desktop-cal-num').offsetHeight - 8;
+    const heights = events.map(e=>e.offsetHeight+3);
+    if (heights.reduce((a,b)=>a+b,0) <= space) return;
+    let used=0, visible=0;
+    for (const h of heights) { if (used+h > space-23) break; used+=h; visible++; }
+    events.forEach((e,i)=>e.hidden=i>=visible);
+    more.textContent = visible ? '+'+(events.length-visible)+' más' : 'Ver '+events.length+' cursos';
+    more.hidden=false;
+  });
+}
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(()=>requestAnimationFrame(fitDesktopCalendar)).observe(document.getElementById('desktopCalendar'));
 }
 
 // EVENT DELEGATION — iOS Safari compatible
@@ -2835,6 +2967,7 @@ document.addEventListener('click', function(e) {
   if      (action === 'detalle') verDetalle(idx);
   else if (action === 'cal')    añadirCalendario(idx);
   else if (action === 'editar') editarCurso(idx);
+  else if (action === 'duplicar') duplicarCurso(idx);
   else if (action === 'avisar') avisarInstructor(idx);
   else if (action === 'toggle') toggleRealizadoCurso(idx);
   else if (action === 'del')    eliminarCurso(idx);
@@ -2846,4 +2979,5 @@ document.addEventListener('click', function(e) {
 </script>
 </body>
 </html>
+
 
