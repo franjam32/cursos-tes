@@ -1275,18 +1275,24 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
       </details>
     </div>
     <div class="form-group assignment-section">
-      <label class="form-label" for="fSolicitanteSelect">Solicitante / Empresa</label>
-      <p class="assignment-help">Quién solicita la formación</p>
+      <label class="form-label" for="fSolicitanteSelect">Persona solicitante</label>
+      <p class="assignment-help">Persona de contacto que solicita la formación</p>
       <div id="solicitanteList"></div>
       <div id="solicitanteAssignment" class="assignment-summary" aria-live="polite"></div>
       <details id="newSolicitanteDetails"><summary>+ Añadir solicitante</summary>
         <div class="instructor-custom">
-          <input type="text" class="form-input" id="nuevoSolicitante" aria-label="Nombre del nuevo solicitante" placeholder="Persona o empresa">
+          <input type="text" class="form-input" id="nuevoSolicitante" aria-label="Nombre del nuevo solicitante" placeholder="Nombre de la persona">
           <button type="button" class="btn-add-ins" onclick="agregarSolicitanteCustom()">Añadir y seleccionar</button>
         </div>
       </details>
     </div>
 
+    <div class="form-group assignment-section">
+      <label class="form-label" for="fEmpresa">Empresa organizadora / Cliente de facturación</label>
+      <p class="assignment-help">Razón social de la empresa. Es independiente de la persona solicitante.</p>
+      <input class="form-input" id="fEmpresa" list="empresasCurso" placeholder="Ej. Vitaly health services S.L.U.">
+      <datalist id="empresasCurso"></datalist>
+    </div>
     <div class="form-group">
       <label class="form-label">Observaciones</label>
       <textarea class="form-textarea" id="fObs" placeholder="Notas, material, nº alumnos…"></textarea>
@@ -1416,7 +1422,7 @@ let cursos = [], filtroActivo = 'pendiente', editandoId = null;
 let instructorSel = '', solicitanteSel = '', usuarioActual = '';
 let gapiOk = false, gisOk = false, tokenClient = null, syncTimer = null;
 let INSTRUCTORES = ['Fran Álvarez','Julio','Tere','Sin instructor'];
-let SOLICITANTES = ['Guillermo','Lorena','Redtel','Miguel (Koremi)','Maite','Nuria Peso','CCOO','UGT','Cualtis','Sin solicitante'];
+let SOLICITANTES = ['Verónica','Guillermo','Lorena','Redtel','Miguel (Koremi)','Maite','Nuria Peso','CCOO','UGT','Cualtis','Sin solicitante'];
 
 // ══════════════════════════════════════════════════════════════
 // LOGIN
@@ -1449,7 +1455,8 @@ function entrar() {
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID, scope: SCOPES,
       callback: async (resp) => {
-        console.log('OAuth response:', JSON.stringify(resp));
+        // Keep access tokens out of logs.
+        if (!resp.error) cursoGoogleExpiry = Date.now() + Number(resp.expires_in || 3600)*1000;
         if (resp.error) { setSyncError('Error de autorización'); resetLogin(); return; }
         mostrarApp();
         await cargarSheets();
@@ -1478,16 +1485,17 @@ function mostrarApp() {
 async function cargarSheets() {
   setSyncSyncing('Sincronizando…');
   try {
+    await ensureEmpresaColumn();
     const r = await gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
-      range: `${TAB}!A:N`,
+      range: `${TAB}!A:O`,
     });
 
     const rows = r.result.values || [];
     if (rows.length <= 1) { cursos = []; render(); setSyncOk('Sin datos aún'); return; }
 
     // Fila 0 = cabecera, filas 1+ = datos
-    cursos = rows.slice(1).filter(r => r && r[1]).map((r, i) => ({
+    cursos = rows.slice(1).map((r, i) => ({
       _row:        i + 2,           // fila real en sheet (1-indexed, +1 por cabecera, +1 por base 1)
       id:          r[10] || '',     // K: ID_APP
       realizado:   r[0] === 'TRUE' || r[0] === true || r[0] === '✓' || r[0] === 'VERDADERO',
@@ -1498,13 +1506,14 @@ async function cargarSheets() {
       lugar:       r[5]  || '',
       instructor:  r[6]  || '',   // G: DOCENTE
       solicitante: r[7]  || '',   // H: SOLICITA
+      empresa:     r[14] || '', // O: EMPRESA
       obs:         r[8]  || '',
       autor:       r[9]  || '',
       // Checklist gestión
       docRecogida: r[11] === 'TRUE' || r[11] === true || r[11] === 'VERDADERO', // L
       docEntregada:r[12] === 'TRUE' || r[12] === true || r[12] === 'VERDADERO', // M
       factEmitida: r[13] === 'TRUE' || r[13] === true || r[13] === 'VERDADERO', // N
-    }));
+    })).filter(c => c.fecha);
 
     // Calcular horas desde inicio/fin si no las tiene
     cursos.forEach(c => {
@@ -1551,6 +1560,7 @@ function toRow(c) {
     c.docRecogida  ? true : false,    // L: DOC_RECOGIDA
     c.docEntregada ? true : false,    // M: DOC_ENTREGADA
     c.factEmitida  ? true : false,    // N: FACT_EMITIDA
+    empresaCurso(c),                   // O: EMPRESA
   ];
 }
 
@@ -1570,10 +1580,11 @@ function fechaADate(f) {
 }
 
 async function appendRow(c) {
+  await ensureEmpresaColumn();
   // 1. Añadir la fila al final
   await gapi.client.sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
-    range: `${TAB}!A:N`,
+    range: `${TAB}!A:O`,
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     resource: { values: [toRow(c)] },
@@ -1623,7 +1634,7 @@ async function ordenarPorFecha() {
             startRowIndex: 1,        // fila 2 (excluye cabecera)
             endRowIndex: totalRows,
             startColumnIndex: 0,
-            endColumnIndex: 14
+            endColumnIndex: 15
           },
           sortSpecs: [{
             dimensionIndex: 1,       // columna B = FECHA
@@ -1636,10 +1647,11 @@ async function ordenarPorFecha() {
 }
 
 async function updateRow(c) {
+  await ensureEmpresaColumn();
   if (!c._row) { await appendRow(c); return; }
   await gapi.client.sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
-    range: `${TAB}!A${c._row}:N${c._row}`,
+    range: `${TAB}!A${c._row}:O${c._row}`,
     valueInputOption: 'USER_ENTERED',
     resource: { values: [toRow(c)] },
   });
@@ -1696,7 +1708,7 @@ function getFilteredCursos() {
 function desktopVisibleCursos(datos) {
   const q = (document.getElementById('desktopSearch')?.value || '').trim().toLowerCase();
   if (!q) return datos;
-  return datos.filter(c => [c.fecha,c.inicio,c.fin,c.curso,c.lugar,c.solicitante,c.instructor,c.obs,c.autor]
+  return datos.filter(c => [c.fecha,c.inicio,c.fin,c.curso,c.lugar,c.solicitante,empresaCurso(c),c.instructor,c.obs,c.autor]
     .some(v => String(v || '').toLowerCase().includes(q)));
 }
 
@@ -1721,7 +1733,7 @@ function desktopSortValue(c, key) {
   if (key === 'inicio') return desktopTimeValue(c.inicio);
   if (key === 'curso') return String(c.curso || '').toLowerCase();
   if (key === 'lugar') return String(c.lugar || '').toLowerCase();
-  if (key === 'solicitante') return String(c.solicitante || '').toLowerCase();
+  if (key === 'solicitante') return personaCurso(c).toLowerCase();
   if (key === 'instructor') return String(c.instructor || 'zzz sin instructor').toLowerCase();
   if (key === 'estado') return desktopEstadoRank(c);
   if (key === 'horas') return parseFloat(c.horas || (c.inicio && c.fin ? calcH(c.inicio,c.fin) : 0) || 0);
@@ -1869,7 +1881,7 @@ function renderDesktopRows(datos) {
       <td>${c.inicio&&c.fin ? escHtml(c.inicio + ' - ' + c.fin) : '—'}${horas ? `<br><span style="color:var(--muted);font-size:11px">${horas}h</span>` : ''}</td>
       <td><div class="desktop-course"><span class="tipo-badge tipo-${tk}">${escHtml(c.curso || '—')}</span><span>${horas ? `${horas}h` : 'Sin horas'}</span></div></td>
       <td><div class="desktop-place"><strong>${escHtml(c.lugar || 'Sin ubicación')}</strong><span>${escHtml(c.obs || 'Sin observaciones')}</span></div></td>
-      <td>${escHtml(c.solicitante || '—')}</td>
+      <td>${escHtml(personaCurso(c) || 'Sin contacto')}<div style="font-size:10px;color:var(--muted)">${escHtml(empresaCurso(c))}</div></td>
       <td>${c.instructor ? escHtml(c.instructor) : '<span style="color:#f0a850;font-weight:800">Sin instructor</span>'}</td>
       <td><div class="desktop-docs"><div class="desktop-docs-bar"><span class="desktop-docs-fill" style="width:${Math.round(docs/3*100)}%"></span></div><span class="desktop-docs-text">${docs}/3</span></div></td>
       <td><span class="desktop-status ${estado.cls}">${escHtml(estado.label)}</span></td>
@@ -1943,7 +1955,8 @@ function renderDesktopInspector() {
     </div>
     <span class="desktop-status ${estado.cls}">${escHtml(estado.label)}</span>
     <div class="desktop-detail-grid">
-      <div class="desktop-detail"><label>Solicitante</label><div>${escHtml(c.solicitante || '—')}</div></div>
+      <div class="desktop-detail"><label>Solicitante</label><div>${escHtml(personaCurso(c) || '—')}</div></div>
+      <div class="desktop-detail full"><label>Empresa organizadora</label><div>${escHtml(empresaCurso(c) || '—')}</div></div>
       <div class="desktop-detail"><label>Instructor</label><div>${escHtml(c.instructor || 'Sin instructor')}</div></div>
       <div class="desktop-detail"><label>Autor</label><div>${escHtml(c.autor || '—')}</div></div>
       <div class="desktop-detail"><label>Horas</label><div>${horas || '—'}</div></div>
@@ -2085,7 +2098,9 @@ function abrirModal(d=null) {
   document.getElementById('fObs').value         = c?.obs          || '';
   document.getElementById('fRealizado').checked = c?.realizado    || false;
   instructorSel = c?.instructor || '';
-  solicitanteSel = c?.solicitante || '';
+  solicitanteSel = c ? personaCurso(c) : '';
+  actualizarEmpresasFormulario();
+  document.getElementById('fEmpresa').value = c ? empresaCurso(c) : '';
   document.getElementById('newInstructorDetails').open=false;
   document.getElementById('newSolicitanteDetails').open=false;
   document.getElementById('nuevoInstructor').value='';
@@ -2149,7 +2164,7 @@ function agregarInstructorCustom() {
 }
 
 function renderSolicitantes() {
-  renderAssignmentSelect('solicitanteList', 'fSolicitanteSelect', SOLICITANTES, solicitanteSel, 'Sin solicitante', n => { solicitanteSel=n; renderSolicitantes(); });
+  renderAssignmentSelect('solicitanteList', 'fSolicitanteSelect', SOLICITANTES.filter(n=>!esEmpresaAnterior(n)), solicitanteSel, 'Sin solicitante', n => { solicitanteSel=n; sugerirEmpresaContacto(); renderSolicitantes(); });
   document.getElementById('solicitanteAssignment').textContent = solicitanteSel && solicitanteSel !== 'Sin solicitante' ? '✓ Solicitado por ' + solicitanteSel : 'Sin solicitante seleccionado';
 }
 
@@ -2158,7 +2173,7 @@ function selSol(n) { solicitanteSel = solicitanteSel===n?'':n; renderSolicitante
 function agregarSolicitanteCustom() {
   const inp=document.getElementById('nuevoSolicitante'), n=inp.value.trim(); if(!n) return;
   if(!SOLICITANTES.includes(n)) SOLICITANTES.unshift(n);
-  solicitanteSel=n; inp.value=''; renderSolicitantes(); document.getElementById('newSolicitanteDetails').open=false;
+  solicitanteSel=n; inp.value=''; sugerirEmpresaContacto(); renderSolicitantes(); document.getElementById('newSolicitanteDetails').open=false;
 }
 
 async function guardarCurso() {
@@ -2180,6 +2195,10 @@ async function guardarCurso() {
     curso:       tipo,
     lugar:       document.getElementById('fLugar').value.trim(),
     solicitante: solicitanteSel,
+    empresa:     document.getElementById('fEmpresa').value.trim(),
+    docRecogida: existente?.docRecogida || false,
+    docEntregada: existente?.docEntregada || false,
+    factEmitida: existente?.factEmitida || false,
     instructor:  instructorSel,
     obs:         document.getElementById('fObs').value.trim(),
     autor:       existente?.autor || usuarioActual,
@@ -2251,7 +2270,8 @@ function verDetalle(idx) {
     <div class="detail-grid" style="margin-top:13px">
       ${c.inicio?`<div class="detail-item"><div class="detail-label">Inicio</div><div class="detail-value">${c.inicio}</div></div>`:''}
       ${c.fin   ?`<div class="detail-item"><div class="detail-label">Fin</div><div class="detail-value">${c.fin}</div></div>`:''}
-      ${c.solicitante?`<div class="detail-item full"><div class="detail-label">Solicitante</div><div class="detail-value">${c.solicitante}</div></div>`:''}
+      ${personaCurso(c)?`<div class="detail-item full"><div class="detail-label">Persona solicitante</div><div class="detail-value">${escHtml(personaCurso(c))}</div></div>`:''}
+      ${empresaCurso(c)?`<div class="detail-item full"><div class="detail-label">Empresa organizadora</div><div class="detail-value">${escHtml(empresaCurso(c))}</div></div>`:''}
       ${c.instructor ?`<div class="detail-item full"><div class="detail-label">Instructor</div><div class="detail-value">${c.instructor}</div></div>`:''}
       ${c.autor      ?`<div class="detail-item"><div class="detail-label">Añadido por</div><div class="detail-value">${c.autor}</div></div>`:''}
       ${c.obs        ?`<div class="detail-item full"><div class="detail-label">Observaciones</div><div class="detail-value" style="white-space:pre-wrap;line-height:1.5">${c.obs}</div></div>`:''}
@@ -2309,7 +2329,7 @@ function abrirGoogleCalendar() {
   const c=cursos[_calIdx]; if(!c) return;
   const {i,f}=calDates(c);
   const titulo=encodeURIComponent(`${c.curso||'Formación'}: ${c.lugar||''}`);
-  const desc=encodeURIComponent([c.instructor&&`Instructor: ${c.instructor}`,c.solicitante&&`Solicitante: ${c.solicitante}`,c.obs&&`Notas: ${c.obs}`].filter(Boolean).join('\n'));
+  const desc=encodeURIComponent([c.instructor&&`Instructor: ${c.instructor}`,personaCurso(c)&&`Solicitante: ${personaCurso(c)}`,empresaCurso(c)&&`Empresa: ${empresaCurso(c)}`,c.obs&&`Notas: ${c.obs}`].filter(Boolean).join('\n'));
   window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${titulo}&dates=${i}/${f}&details=${desc}&location=${encodeURIComponent(c.lugar||'')}`, '_blank');
   cerrarCalModal(); mostrarToast('📆 Abriendo Google Calendar…');
 }
@@ -2328,7 +2348,7 @@ function generarICS(c) {
   const now=new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
   const uid=`curso-${c._row}-${Date.now()}@tes`;
   const {i,f}=calDates(c);
-  const desc=[c.instructor&&`Instructor: ${c.instructor}`,c.solicitante&&`Solicitante: ${c.solicitante}`,c.obs&&`Notas: ${c.obs}`].filter(Boolean).join('\\n');
+  const desc=[c.instructor&&`Instructor: ${c.instructor}`,personaCurso(c)&&`Solicitante: ${personaCurso(c)}`,empresaCurso(c)&&`Empresa: ${empresaCurso(c)}`,c.obs&&`Notas: ${c.obs}`].filter(Boolean).join('\\n');
   const allDay = !c.inicio||!c.fin;
   return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//TES Formacion//ES','BEGIN:VEVENT',
     `UID:${uid}`,`DTSTAMP:${now}`,
@@ -2352,7 +2372,8 @@ function exportarExcel() {
     'FIN':       c.fin,
     'CURSO':     c.curso,
     'LUGAR':     c.lugar,
-    'SOLICITANTE': c.solicitante,
+    'SOLICITANTE': personaCurso(c),
+    'EMPRESA': empresaCurso(c),
     'INSTRUCTOR':  c.instructor,
     'OBSERVACIONES': c.obs,
     'AUTOR':     c.autor,
@@ -2380,7 +2401,7 @@ function importarExcel(event) {
           id: Date.now().toString()+Math.random().toString(36).slice(2),
           realizado: gc(f,'realizado').toUpperCase()==='TRUE',
           fecha, inicio:gc(f,'inicio'), fin:gc(f,'fin'), curso, lugar,
-          solicitante:gc(f,'solicitante'), instructor:gc(f,'instructor'),
+          solicitante:gc(f,'solicitante'), empresa:gc(f,'empresa'), instructor:gc(f,'instructor'),
           obs:gc(f,'observaciones','obs'), autor:usuarioActual,
         };
         await appendRow(nuevo); imp++;
@@ -2749,58 +2770,6 @@ function mostrarToast(msg,color='#00b880') {
 // ══════════════════════════════════════════════════════════════
 // CREAR FACTURA
 // ══════════════════════════════════════════════════════════════
-async function crearFactura(idx) {
-  const c = cursos[idx]; if (!c) return;
-
-  // Formatear fecha DD/MM/YYYY
-  let fechaFactura = '';
-  if (c.fecha) {
-    if (c.fecha.includes('/')) {
-      // Ya en formato D/M/YYYY → normalizar a DD/MM/YYYY
-      const p = c.fecha.split('/');
-      fechaFactura = `${p[0].padStart(2,'0')}/${p[1].padStart(2,'0')}/${p[2]}`;
-    } else if (c.fecha.includes('-')) {
-      const p = c.fecha.split('-');
-      fechaFactura = `${p[2]}/${p[1]}/${p[0]}`;
-    }
-  }
-
-  // Construir concepto
-  const tipo   = c.curso  || 'formación';
-  const lugar  = c.lugar  || '';
-  const solicit = c.solicitante || '';
-  const horas  = c.inicio && c.fin ? calcH(c.inicio, c.fin) : '';
-
-  let concepto = `Impartir curso de ${tipo}`;
-  if (solicit) concepto += ` en ${solicit}`;
-  if (lugar)   concepto += ` — ${lugar}`;
-  if (horas)   concepto += ` (${horas}h)`;
-
-  // Texto completo para portapapeles
-  const texto = `FECHA: ${fechaFactura}
-CONCEPTO: ${concepto}`;
-
-  // Copiar al portapapeles
-  try {
-    await navigator.clipboard.writeText(texto);
-  } catch(e) {
-    // Fallback para iOS Safari
-    const ta = document.createElement('textarea');
-    ta.value = texto;
-    ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.focus(); ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
-
-  // Mostrar confirmación y abrir app facturas
-  mostrarToast('📋 Copiado — abriendo Facturas…', '#a080e0');
-  setTimeout(() => {
-    window.open('https://franjam32.github.io/facturas/', '_blank');
-  }, 600);
-}
-
 // ══════════════════════════════════════════════════════════════
 // TOGGLE TEMA CLARO / OSCURO
 // ══════════════════════════════════════════════════════════════
@@ -2956,6 +2925,73 @@ if (typeof ResizeObserver !== 'undefined') {
   new ResizeObserver(()=>requestAnimationFrame(fitDesktopCalendar)).observe(document.getElementById('desktopCalendar'));
 }
 
+const VITALY_EMPRESA = 'Vitaly health services S.L.U.';
+const EMPRESAS_INICIALES = [VITALY_EMPRESA,'Redtel','Cualtis','CCOO','UGT'];
+const CONTACTOS_VITALY = ['Verónica','Lorena','Maite','Guillermo','Nuria Peso'];
+let cursoGoogleExpiry = 0;
+let empresaColumnReady = false;
+function normalizarEmpresaPersona(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+}
+function esEmpresaAnterior(name) {
+  return EMPRESAS_INICIALES.some(n=>normalizarEmpresaPersona(n)===normalizarEmpresaPersona(name));
+}
+function personaCurso(c) {
+  return esEmpresaAnterior(c.solicitante) || c.solicitante==='Sin solicitante' ? '' : (c.solicitante || '');
+}
+function empresaCurso(c) {
+  if (c.empresa) return c.empresa;
+  if (esEmpresaAnterior(c.solicitante)) return c.solicitante;
+  return CONTACTOS_VITALY.some(n=>normalizarEmpresaPersona(n)===normalizarEmpresaPersona(c.solicitante)) ? VITALY_EMPRESA : '';
+}
+function actualizarEmpresasFormulario() {
+  const names=[...new Set([...EMPRESAS_INICIALES,...cursos.map(empresaCurso).filter(Boolean)])];
+  const list=document.getElementById('empresasCurso');list.replaceChildren(...names.map(n=>new Option(n,n)));
+}
+function sugerirEmpresaContacto() {
+  const input=document.getElementById('fEmpresa');
+  if (!input.value.trim()) input.value=empresaCurso({solicitante:solicitanteSel});
+}
+async function ensureEmpresaColumn() {
+  if (empresaColumnReady) return;
+  const meta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
+  const sheet=meta.result.sheets.find(s=>s.properties.title===TAB);
+  if (!sheet) throw new Error('No se encuentra la hoja de cursos');
+  if (sheet.properties.gridProperties.columnCount < 15) {
+    await gapi.client.sheets.spreadsheets.batchUpdate({spreadsheetId:SHEET_ID,resource:{requests:[{appendDimension:{sheetId:sheet.properties.sheetId,dimension:'COLUMNS',length:15-sheet.properties.gridProperties.columnCount}}]}});
+  }
+  const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:`${TAB}!O:O`});
+  const rows=r.result.values || [];
+  const header=normalizarEmpresaPersona(rows[0]?.[0]);
+  if (header && header!=='empresa') throw new Error('La columna O ya contiene otros datos; no se ha modificado');
+  if (!header && rows.slice(1).some(r=>r[0])) throw new Error('La columna O tiene datos sin cabecera; no se ha modificado');
+  if (!header) await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:`${TAB}!O1`,valueInputOption:'RAW',resource:{values:[['EMPRESA']]}});
+  empresaColumnReady=true;
+}
+function crearFactura(idx) {
+  const c=cursos[idx]; if(!c)return;
+  const empresa=empresaCurso(c);
+  if (!empresa) { abrirModal(idx);document.getElementById('fEmpresa').focus();mostrarToast('Indica la empresa organizadora y guarda el curso antes de facturar','#a36a00');return; }
+  const fecha=fechaParaInput(c.fecha);
+  const horas=c.inicio&&c.fin?calcH(c.inicio,c.fin):'';
+  const concepto=`Por impartir como docente el curso de ${c.curso || 'formación'}${c.lugar?' en '+c.lugar:''}${fecha?' el '+fecha.split('-').reverse().join('/'):''}${horas?' ('+horas+' horas)':''}`;
+  const key=crypto.randomUUID();
+  const payload={version:1,createdAt:Date.now(),cursoId:c.id||'',empresa,solicitante:personaCurso(c),curso:c.curso||'',fecha,lugar:c.lugar||'',inicio:c.inicio||'',fin:c.fin||'',horas,concepto};
+  try {localStorage.setItem('fja_course_draft_'+key,JSON.stringify(payload));} catch(e) {mostrarToast('No se pudo preparar la factura. Revisa el almacenamiento del navegador.','#a33');return;}
+  const target=new URL('https://franjam32.github.io/facturas/');target.hash='curso='+key;
+  let popup=null;
+  const respond=event=>{
+    if(event.origin!==target.origin || event.source!==popup || event.data?.type!=='fja:course-session-request' || event.data?.key!==key)return;
+    const token=typeof gapi!=='undefined'?gapi.client.getToken()?.access_token:null;
+    if(token && cursoGoogleExpiry>Date.now()+60000) popup.postMessage({type:'fja:course-session',key,clientId:CLIENT_ID,accessToken:token,expiry:cursoGoogleExpiry},target.origin);
+  };
+  window.addEventListener('message',respond);
+  popup=window.open(target.href,'_blank');
+  setTimeout(()=>window.removeEventListener('message',respond),120000);
+  if(!popup){window.removeEventListener('message',respond);mostrarToast('Permite abrir ventanas para acceder a la factura preparada.','#a36a00');return;}
+  mostrarToast('Abriendo nueva factura con los datos del curso');
+}
+
 // EVENT DELEGATION — iOS Safari compatible
 document.addEventListener('click', function(e) {
   const el = e.target.closest('[data-action]');
@@ -2979,5 +3015,6 @@ document.addEventListener('click', function(e) {
 </script>
 </body>
 </html>
+
 
 
