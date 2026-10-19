@@ -1289,9 +1289,10 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
 
     <div class="form-group assignment-section">
       <label class="form-label" for="fEmpresa">Empresa organizadora / Cliente de facturación</label>
-      <p class="assignment-help">Razón social de la empresa. Es independiente de la persona solicitante.</p>
-      <input class="form-input" id="fEmpresa" list="empresasCurso" placeholder="Ej. Vitaly health services S.L.U.">
-      <datalist id="empresasCurso"></datalist>
+      <p class="assignment-help">Clientes registrados en Facturas. La persona solicitante se selecciona por separado.</p>
+      <select class="form-select" id="fEmpresa"><option value="">— Seleccionar cliente de Facturas —</option></select>
+      <p class="assignment-help" id="empresaCatalogoStatus" aria-live="polite" style="margin-top:8px"></p>
+      <button type="button" class="btn-add-ins" id="refreshClientes" onclick="cargarClientesFacturacion()">Actualizar clientes</button>
     </div>
     <div class="form-group">
       <label class="form-label">Observaciones</label>
@@ -1460,6 +1461,7 @@ function entrar() {
         if (resp.error) { setSyncError('Error de autorización'); resetLogin(); return; }
         mostrarApp();
         await cargarSheets();
+        cargarClientesFacturacion();
         iniciarAutoSync();
       },
     });
@@ -1674,7 +1676,7 @@ async function deleteRow(c) {
 // AUTO SYNC
 // ══════════════════════════════════════════════════════════════
 function iniciarAutoSync() { if (syncTimer) clearInterval(syncTimer); syncTimer = setInterval(cargarSheets, 30000); }
-async function sincronizar() { await cargarSheets(); if (vistaCalendario) renderCalendario(); }
+async function sincronizar() { await Promise.all([cargarSheets(),cargarClientesFacturacion()]); if (vistaCalendario) renderCalendario(); }
 function setSyncOk(m)      { _sync('ok',m); }
 function setSyncSyncing(m) { _sync('syncing',m); }
 function setSyncError(m)   { _sync('error',m); }
@@ -1890,7 +1892,7 @@ function renderDesktopRows(datos) {
           <button class="desktop-icon-btn" data-action="editar" data-idx="${idx}" title="Editar">Editar</button>
           <button class="desktop-icon-btn" data-action="duplicar" data-idx="${idx}" title="Crear una copia como nuevo curso">Duplicar</button>
           <button class="desktop-icon-btn" data-action="avisar" data-idx="${idx}" title="Avisar">Avisar</button>
-          <button class="desktop-icon-btn" data-action="factura" data-idx="${idx}" title="Factura">Fact.</button>
+          ${puedeFacturar() ? `<button class="desktop-icon-btn" data-action="factura" data-idx="${idx}" title="Factura">Fact.</button>` : ''}
         </div>
       </td>
     </tr>`;
@@ -1971,7 +1973,7 @@ function renderDesktopInspector() {
       <button class="btn-accion" data-action="editar" data-idx="${idx}">Editar</button>
       <button class="btn-accion notif" data-action="avisar" data-idx="${idx}">Avisar</button>
       <button class="btn-accion cal" data-action="cal" data-idx="${idx}">Calendario</button>
-      <button class="btn-accion fact" data-action="factura" data-idx="${idx}">Factura</button>
+      ${puedeFacturar() ? `<button class="btn-accion fact" data-action="factura" data-idx="${idx}">Factura</button>` : ''}
       <button class="btn-accion done wide" data-action="toggle" data-idx="${idx}">${c.realizado ? 'Deshacer realizado' : 'Marcar como realizado'}</button>
     </div>`;
 }
@@ -2027,7 +2029,7 @@ function render() {
         ${!c.realizado && c.instructor
           ? `<button class="btn-accion notif" data-action="avisar" data-idx="${cursos.indexOf(c)}">🔔 Avisar</button>`
           : `<button class="btn-accion done"  data-action="toggle" data-idx="${cursos.indexOf(c)}">${c.realizado?'↩ Deshacer':'✅ Hecho'}</button>`}
-        ${c.realizado ? `<button class="btn-accion fact" data-action="factura" data-idx="${cursos.indexOf(c)}">🧾 Factura</button>` : ''}
+        ${c.realizado && puedeFacturar() ? `<button class="btn-accion fact" data-action="factura" data-idx="${cursos.indexOf(c)}">🧾 Factura</button>` : ''}
         <button class="btn-accion del"  data-action="del"     data-idx="${cursos.indexOf(c)}">🗑</button>
       </div>
     </div>`;
@@ -2099,8 +2101,9 @@ function abrirModal(d=null) {
   document.getElementById('fRealizado').checked = c?.realizado    || false;
   instructorSel = c?.instructor || '';
   solicitanteSel = c ? personaCurso(c) : '';
-  actualizarEmpresasFormulario();
-  document.getElementById('fEmpresa').value = c ? empresaCurso(c) : '';
+  if (!clientesFacturacion.length) cargarClientesCache();
+  actualizarEmpresasFormulario(c ? empresaCurso(c) : '');
+  if (!clientesFacturacion.length) cargarClientesFacturacion();
   document.getElementById('newInstructorDetails').open=false;
   document.getElementById('newSolicitanteDetails').open=false;
   document.getElementById('nuevoInstructor').value='';
@@ -2944,14 +2947,6 @@ function empresaCurso(c) {
   if (esEmpresaAnterior(c.solicitante)) return c.solicitante;
   return CONTACTOS_VITALY.some(n=>normalizarEmpresaPersona(n)===normalizarEmpresaPersona(c.solicitante)) ? VITALY_EMPRESA : '';
 }
-function actualizarEmpresasFormulario() {
-  const names=[...new Set([...EMPRESAS_INICIALES,...cursos.map(empresaCurso).filter(Boolean)])];
-  const list=document.getElementById('empresasCurso');list.replaceChildren(...names.map(n=>new Option(n,n)));
-}
-function sugerirEmpresaContacto() {
-  const input=document.getElementById('fEmpresa');
-  if (!input.value.trim()) input.value=empresaCurso({solicitante:solicitanteSel});
-}
 async function ensureEmpresaColumn() {
   if (empresaColumnReady) return;
   const meta=await gapi.client.sheets.spreadsheets.get({spreadsheetId:SHEET_ID});
@@ -2969,9 +2964,11 @@ async function ensureEmpresaColumn() {
   empresaColumnReady=true;
 }
 function crearFactura(idx) {
+  if (!puedeFacturar()) { mostrarToast('La facturación solo está disponible para Fran','#a36a00'); return; }
   const c=cursos[idx]; if(!c)return;
-  const empresa=empresaCurso(c);
-  if (!empresa) { abrirModal(idx);document.getElementById('fEmpresa').focus();mostrarToast('Indica la empresa organizadora y guarda el curso antes de facturar','#a36a00');return; }
+  const storedEmpresa=empresaCurso(c);
+  const empresa=clientesFacturacion.find(n=>clienteNombreKey(n)===clienteNombreKey(storedEmpresa));
+  if (!empresa) { abrirModal(idx);document.getElementById('fEmpresa').focus();mostrarToast('Selecciona un cliente del catálogo de Facturas antes de facturar','#a36a00');return; }
   const fecha=fechaParaInput(c.fecha);
   const horas=c.inicio&&c.fin?calcH(c.inicio,c.fin):'';
   const concepto=`Por impartir como docente el curso de ${c.curso || 'formación'}${c.lugar?' en '+c.lugar:''}${fecha?' el '+fecha.split('-').reverse().join('/'):''}${horas?' ('+horas+' horas)':''}`;
@@ -2991,6 +2988,81 @@ function crearFactura(idx) {
   if(!popup){window.removeEventListener('message',respond);mostrarToast('Permite abrir ventanas para acceder a la factura preparada.','#a36a00');return;}
   mostrarToast('Abriendo nueva factura con los datos del curso');
 }
+
+// Use the existing invoice customer catalogue as the single source of names.
+let clientesFacturacion = [];
+let clientesFacturacionLoading = false;
+let clientesFacturacionStatus = '';
+function puedeFacturar() { return usuarioActual === 'Fran'; }
+function clienteNombreKey(name) {
+  return normalizarEmpresaPersona(name).replace(/[^a-z0-9]/g,'');
+}
+function clientesUnicos(rows) {
+  const names=new Map();
+  rows.forEach(c=>{
+    const name=String(c.NombreCliente || '').trim();
+    if(name && !names.has(clienteNombreKey(name)))names.set(clienteNombreKey(name),name);
+  });
+  return [...names.values()].sort((a,b)=>a.localeCompare(b,'es'));
+}
+function cargarClientesCache() {
+  try {
+    const data=JSON.parse(localStorage.getItem('fja_facturas') || 'null');
+    const cached=JSON.parse(localStorage.getItem('cursos_clientes_facturacion') || 'null');
+    const fromInvoices=Array.isArray(data?.clientes)?clientesUnicos(data.clientes):[];
+    clientesFacturacion=fromInvoices.length ? fromInvoices : (Array.isArray(cached?.names)?cached.names.filter(n=>typeof n==='string'):[]);
+    if(clientesFacturacion.length)clientesFacturacionStatus='Clientes guardados de Facturas. Actualizando…';
+  } catch(e) {}
+}
+async function cargarClientesFacturacion() {
+  if(clientesFacturacionLoading)return;
+  clientesFacturacionLoading=true;
+  if(!clientesFacturacion.length)cargarClientesCache();
+  clientesFacturacionStatus='Cargando clientes de Facturas…';
+  actualizarEmpresasFormulario();
+  try {
+    let sheetId='1L46_ar-EVJmU5FwlPuI9GbbNIsRNyLF70TB_AMLaOLs';
+    try {const config=JSON.parse(localStorage.getItem('fja_gs_config') || '{}');if(config.sheetId)sheetId=config.sheetId;}catch(e){}
+    const result=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:sheetId,range:'CLIENTES!A:J'});
+    const rows=result.result.values || [];
+    const header=rows[0] || [];
+    const nameIndex=header.findIndex(x=>clienteNombreKey(x)==='nombrecliente');
+    if(nameIndex<0 && rows.length)throw new Error('No se reconoce la columna NombreCliente');
+    clientesFacturacion=clientesUnicos(rows.slice(1).map(row=>({NombreCliente:row[nameIndex]})));
+    localStorage.setItem('cursos_clientes_facturacion',JSON.stringify({names:clientesFacturacion,updatedAt:Date.now()}));
+    clientesFacturacionStatus=clientesFacturacion.length ? clientesFacturacion.length+' clientes de Facturas disponibles' : 'No hay clientes en Facturas. Añádelos allí y pulsa Actualizar clientes.';
+  }catch(e){
+    clientesFacturacionStatus=clientesFacturacion.length ? 'No se pudo actualizar. Se muestran los clientes guardados de Facturas.' : 'No se pudo leer el catálogo. Esta cuenta necesita acceso a la hoja de clientes de Facturas.';
+  }finally{
+    clientesFacturacionLoading=false;
+    actualizarEmpresasFormulario();
+  }
+}
+function actualizarEmpresasFormulario(selected) {
+  const select=document.getElementById('fEmpresa');if(!select)return;
+  const current=selected===undefined?select.value:selected;
+  const match=clientesFacturacion.find(n=>clienteNombreKey(n)===clienteNombreKey(current));
+  select.replaceChildren(new Option('— Seleccionar cliente de Facturas —',''));
+  clientesFacturacion.forEach(name=>select.add(new Option(name,name)));
+  if(current && !match) {
+    const legacy=new Option('Empresa guardada: '+current+' (pendiente de vincular)',current);
+    legacy.disabled=true;select.add(legacy);
+  }
+  select.value=match || current || '';
+  document.getElementById('empresaCatalogoStatus').textContent=clientesFacturacionStatus || 'Selecciona la razón social registrada en Facturas.';
+  document.getElementById('refreshClientes').disabled=clientesFacturacionLoading;
+}
+function sugerirEmpresaContacto() {
+  const select=document.getElementById('fEmpresa');
+  if(!select.value) {
+    const proposed=empresaCurso({solicitante:solicitanteSel});
+    const canonical=clientesFacturacion.find(n=>clienteNombreKey(n)===clienteNombreKey(proposed));
+    if(canonical)select.value=canonical;
+  }
+}
+window.addEventListener('storage',event=>{
+  if(event.key==='fja_facturas') {cargarClientesCache();actualizarEmpresasFormulario();}
+});
 
 // EVENT DELEGATION — iOS Safari compatible
 document.addEventListener('click', function(e) {
@@ -3015,6 +3087,7 @@ document.addEventListener('click', function(e) {
 </script>
 </body>
 </html>
+
 
 
 
