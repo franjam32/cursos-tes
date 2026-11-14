@@ -43,7 +43,7 @@
 </main>
 <script>
 (()=>{
- const qs=new URLSearchParams(location.search),FORM_ID=qs.get('form')||'',BACKEND=normalizeBackend(qs.get('backend')||'');
+ const FIXED_BACKEND='https://script.google.com/macros/s/AKfycbz77Hg7_EeyFYG611rr-0xxd5NXwvvG-83WcLuZxKZX3rO5nJBhAF0tVLhr0Aw2GDFI/exec';const qs=new URLSearchParams(location.search),FORM_ID=qs.get('form')||'',BACKEND=normalizeBackend(FIXED_BACKEND);
  const f=document.getElementById('f'),dates=document.getElementById('dates'),send=document.getElementById('send'),formCard=document.getElementById('formCard'),ok=document.getElementById('ok'),loadError=document.getElementById('loadError'),sendStatus=document.getElementById('sendStatus');
  const fmt=v=>{const p=String(v||'').split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:String(v||'')};
  function normalizeBackend(v){try{const u=new URL(v);if(u.protocol!=='https:'||u.hostname!=='script.google.com'||!/^\/macros\/(?:u\/\d+\/)?s\//.test(u.pathname))return '';u.pathname=u.pathname.replace(/\/macros\/u\/\d+\/s\//,'/macros/s/');u.search='';u.hash='';return u.toString().replace(/\/$/,'')}catch(e){return ''}}
