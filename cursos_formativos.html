@@ -2814,49 +2814,69 @@ async function toggleCheck(e, idx, campo) {
 let _avisarCurso = null;
 let _avisarEmailInstructor = '';
 let _avisarTelefonoInstructor = '';
-
+let _telefonoGuardando = null;
+function limpiarTelefono(value) {
+  let digits=String(value||'').replace(/\D/g,'');
+  if(!digits)return '';
+  if(digits.startsWith('00'))digits=digits.slice(2);
+  if(digits.length===9 && /^[67]/.test(digits))digits='34'+digits;
+  return digits.length>=10 && digits.length<=15 ? '+'+digits : null;
+}
+function actualizarInfoRemitente(){
+  const email=correoUsuario();
+  const proveedor=document.getElementById('avisarProveedor').value;
+  document.getElementById('avisarRemitenteInfo').textContent='Usuario: '+(usuarioActual||'—')+' · '+(email||'sin correo registrado')+'. Verifica el remitente en '+(proveedor==='gmail'?'Gmail':'Outlook')+'.';
+}
 async function avisarInstructor(idx) {
-  const c = cursos[idx]; if (!c) return;
-  _avisarCurso = c;
-
-  // Buscar email del instructor en la hoja INSTRUCTORES
-  _avisarEmailInstructor = '';
-  _avisarTelefonoInstructor = '';
-  try {
-    const r = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID, range: 'INSTRUCTORES!A:C',
-    });
-    const rows = r.result.values || [];
-    const fila = rows.slice(1).find(row =>
-      (row[1]||'').toLowerCase().trim() === String(c.instructor||'').toLowerCase().trim()
-    );
-    if (fila) _avisarEmailInstructor = fila[0] || '';
-    if (fila && /tel[eé]fono|m[oó]vil|whatsapp/i.test(rows[0]?.[2] || '')) _avisarTelefonoInstructor = fila[2] || '';
-  } catch(e) { console.warn('No se pudo leer hoja instructores:', e); }
-
-  // Rellenar info del curso en el modal
-  const fecha = formatFecha(c.fecha);
-  const horas = c.inicio && c.fin ? calcH(c.inicio, c.fin) : '';
-  document.getElementById('avisarInfo').innerHTML =
-    `<strong style="color:var(--text)">👤 ${c.instructor}</strong>` +
-    (_avisarEmailInstructor ? `<span style="color:var(--muted);font-size:11px;margin-left:6px">${_avisarEmailInstructor}</span>` : '<span style="color:#f0c060;font-size:11px;margin-left:6px">⚠️ Sin email registrado</span>') +
-    `<br><span style="color:var(--muted)">${c.curso||''} · ${fecha}${c.inicio&&c.fin?' · '+c.inicio+'–'+c.fin:''}${horas?' · '+horas+'h':''}${c.lugar?' · '+c.lugar:''}</span>`;
-
-  document.getElementById('avisarMensajeExtra').value = '';
-  document.getElementById('avisarTelefono').value = _avisarTelefonoInstructor;
-  document.getElementById('avisarEmailDestino').value = _avisarEmailInstructor;
+  const c=cursos[idx];if(!c)return;
+  _avisarCurso=c;
+  const contact=contactoInstructor.get(normalizarEmpresaPersona(c.instructor))||{};
+  _avisarEmailInstructor=contact.email||'';
+  _avisarTelefonoInstructor=contact.telefono||'';
+  const fecha=formatFecha(c.fecha),horas=c.inicio&&c.fin?calcH(c.inicio,c.fin):'';
+  document.getElementById('avisarInfo').innerHTML=
+    '<strong style="color:var(--text)">👤 '+escHtml(c.instructor||'Sin instructor')+'</strong>'+
+    (_avisarEmailInstructor?'<span style="color:var(--muted);font-size:11px;margin-left:6px">'+escHtml(_avisarEmailInstructor)+'</span>':'<span style="color:#f0c060;font-size:11px;margin-left:6px">⚠️ Sin email registrado</span>')+
+    '<br><span style="color:var(--muted)">'+escHtml((c.curso||'')+' · '+fecha+(c.inicio&&c.fin?' · '+c.inicio+'–'+c.fin:'')+(horas?' · '+horas+'h':'')+(c.lugar?' · '+c.lugar:''))+'</span>';
+  document.getElementById('avisarMensajeExtra').value='';
+  document.getElementById('avisarTelefono').value=_avisarTelefonoInstructor;
+  document.getElementById('avisarEmailDestino').value=_avisarEmailInstructor;
+  document.getElementById('avisarProveedor').value=/@(hotmail|outlook|live)\./i.test(correoUsuario())?'outlook':'gmail';
+  actualizarInfoRemitente();
   document.getElementById('avisarOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow='hidden';
 }
-
-function cerrarAvisarModal() {
-  document.getElementById('avisarOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+async function guardarTelefonoInstructor(silencioso=false) {
+  const name=String(_avisarCurso?.instructor||'').trim();
+  if(!name || /^sin instructor$/i.test(name)){if(!silencioso)mostrarToast('Asigna un instructor','#a36a00');return false;}
+  const telefono=limpiarTelefono(document.getElementById('avisarTelefono').value);
+  if(telefono===null){mostrarToast('Comprueba el teléfono y su prefijo','#a36a00');return false;}
+  const key=normalizarEmpresaPersona(name);
+  const current=contactoInstructor.get(key);
+  if((current?.telefono||'')===telefono){if(!silencioso)mostrarToast('✓ Teléfono ya guardado');return true;}
+  if(!telefono && current?.telefono && !confirm('¿Eliminar el teléfono guardado de '+name+'?'))return false;
+  if(_telefonoGuardando)await _telefonoGuardando;
+  const task=(async()=>{
+    try{
+      const r=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:'INSTRUCTORES!A:C'});
+      const rows=r.result.values||[];
+      const index=rows.findIndex((row,i)=>i>0&&normalizarEmpresaPersona(row[1])===key);
+      if(index>0){
+        await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:SHEET_ID,range:'INSTRUCTORES!C'+(index+1),valueInputOption:'RAW',resource:{values:[[telefono]]}});
+      }else if(telefono){
+        await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:'INSTRUCTORES!A:C',valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[['',name,telefono]]}});
+      }
+      contactoInstructor.set(key,{nombre:name,email:current?.email||'',telefono});
+      _avisarTelefonoInstructor=telefono;
+      if(!silencioso)mostrarToast('✓ Teléfono guardado para '+name);
+      return true;
+    }catch(e){console.error(e);mostrarToast('No se pudo guardar el teléfono','#cc4433');return false;}
+  })();
+  _telefonoGuardando=task;
+  try{return await task;}finally{if(_telefonoGuardando===task)_telefonoGuardando=null;}
 }
-
-function cerrarSiOverlayAvisar(e) {
-  if (e.target === document.getElementById('avisarOverlay')) cerrarAvisarModal();
-}
+function cerrarAvisarModal(){document.getElementById('avisarOverlay').classList.remove('open');document.body.style.overflow='';}
+function cerrarSiOverlayAvisar(e){if(e.target===document.getElementById('avisarOverlay'))cerrarAvisarModal();}
 
 function _buildMensaje(c) {
   const fecha = formatFecha(c.fecha);
@@ -2875,38 +2895,42 @@ ${extra}` : ''}
 Puedes ver todos tus cursos en: ${new URL('cursos_instructor.html', window.location.href).href}`;
 }
 
-function avisarWhatsApp() {
-  const c = _avisarCurso; if (!c) return;
-  let tel = document.getElementById('avisarTelefono').value.replace(/\D/g, '');
-  if (tel.length === 9 && /^[67]/.test(tel)) tel = '34' + tel;
-  if (tel && (tel.length < 10 || tel.length > 15)) { mostrarToast('Comprueba el número de WhatsApp','#a36a00'); return; }
-  const msg = encodeURIComponent(_buildMensaje(c));
-  const url = tel ? 'https://wa.me/' + tel + '?text=' + msg : 'https://api.whatsapp.com/send?text=' + msg;
+function avisarWhatsApp(){
+  const c=_avisarCurso;if(!c)return;
+  const telefono=limpiarTelefono(document.getElementById('avisarTelefono').value);
+  if(telefono===null){mostrarToast('Comprueba el teléfono de WhatsApp','#a36a00');return;}
+  const msg=encodeURIComponent(_buildMensaje(c));
+  const url=telefono?'https://wa.me/'+telefono.replace(/\D/g,'')+'?text='+msg:'https://api.whatsapp.com/send?text='+msg;
   const popup=window.open(url,'_blank');
-  if (!popup) { mostrarToast('Permite las ventanas emergentes para WhatsApp','#a36a00'); return; }
+  if(!popup){mostrarToast('Permite ventanas emergentes para WhatsApp','#a36a00');return;}
+  void guardarTelefonoInstructor(true);
   cerrarAvisarModal();
-  mostrarToast(tel ? '💬 Conversación de WhatsApp preparada' : '💬 Elige destinatario en WhatsApp');
+  mostrarToast(telefono?'💬 Conversación preparada':'💬 Elige destinatario en WhatsApp');
 }
-
-function avisarEmail() {
-  const c = _avisarCurso; if (!c) return;
-  const destinatario = document.getElementById('avisarEmailDestino').value.trim();
-  if (destinatario && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(destinatario)) { mostrarToast('Comprueba el email del instructor','#a36a00'); return; }
-  const fecha = formatFecha(c.fecha);
-  const asunto = (c.anulado ? 'Curso anulado: ' : 'Curso asignado: ') + (c.curso || 'Formación') + ' · ' + fecha;
-  const body = _buildMensaje(c).replace(/\*([^*]+)\*/g, "$1");
-  const url = new URL('https://mail.google.com/mail/');
-  url.searchParams.set('authuser','franjam32@gmail.com');
-  url.searchParams.set('view','cm');
-  url.searchParams.set('fs','1');
-  url.searchParams.set('tf','1');
-  if (destinatario) url.searchParams.set('to',destinatario);
-  url.searchParams.set('su',asunto);
-  url.searchParams.set('body',body);
+function avisarEmail(){
+  const c=_avisarCurso;if(!c)return;
+  const dest=document.getElementById('avisarEmailDestino').value.trim();
+  if(dest&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dest)){mostrarToast('Comprueba el correo del instructor','#a36a00');return;}
+  const fecha=formatFecha(c.fecha),asunto=(c.anulado?'Curso anulado: ':'Curso asignado: ')+(c.curso||'Formación')+' · '+fecha;
+  const body=_buildMensaje(c).replace(/\*([^*]+)\*/g,'$1');
+  const proveedor=document.getElementById('avisarProveedor').value;
+  let url;
+  if(proveedor==='outlook'){
+    url=new URL('https://outlook.live.com/mail/0/deeplink/compose');
+    if(dest)url.searchParams.set('to',dest);
+    url.searchParams.set('subject',asunto);
+    url.searchParams.set('body',body);
+  }else{
+    url=new URL('https://mail.google.com/mail/');
+    if(correoUsuario())url.searchParams.set('authuser',correoUsuario());
+    url.searchParams.set('view','cm');url.searchParams.set('fs','1');url.searchParams.set('tf','1');
+    if(dest)url.searchParams.set('to',dest);
+    url.searchParams.set('su',asunto);url.searchParams.set('body',body);
+  }
   const popup=window.open(url.toString(),'_blank');
-  if (!popup) { mostrarToast('Permite las ventanas emergentes para Gmail','#a36a00'); return; }
+  if(!popup){mostrarToast('Permite ventanas emergentes para correo','#a36a00');return;}
   cerrarAvisarModal();
-  mostrarToast('✉️ Gmail abierto: verifica el remitente y envía');
+  mostrarToast('✉️ Borrador abierto; verifica el remitente y envía');
 }
 
 // ══════════════════════════════════════════════════════════════
