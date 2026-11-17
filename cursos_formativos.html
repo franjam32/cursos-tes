@@ -1370,6 +1370,16 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
     <div class="modal-handle"></div>
     <div class="modal-title" style="margin-bottom:14px">🔔 Avisar al instructor</div>
     <div id="avisarInfo" style="font-size:13px;color:var(--muted);margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)"></div>
+     <div class="form-row" style="margin-bottom:12px">
+       <div class="form-group" style="flex:1;min-width:160px">
+         <label class="form-label" for="avisarTelefono">Teléfono WhatsApp del instructor</label>
+         <input class="form-input" id="avisarTelefono" type="tel" inputmode="tel" autocomplete="off" placeholder="Ej.: 600 123 456">
+       </div>
+       <div class="form-group" style="flex:1;min-width:160px">
+         <label class="form-label" for="avisarEmailDestino">Email del instructor</label>
+         <input class="form-input" id="avisarEmailDestino" type="email" autocomplete="off" placeholder="correo@ejemplo.com">
+       </div>
+     </div>
 
     <button class="cal-option" onclick="avisarWhatsApp()">
       <div class="cal-icon gc" style="background:rgba(37,211,102,0.15);font-size:22px">💬</div>
@@ -1384,7 +1394,7 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
       <div class="cal-icon ics" style="background:rgba(90,184,248,0.15);font-size:22px">✉️</div>
       <div class="cal-text">
         <div class="cal-title">Email</div>
-        <div class="cal-sub">Abre el cliente de correo con todos los detalles del curso.</div>
+        <div class="cal-sub">Prepara el correo en Gmail desde franjam32@gmail.com. Revisa el remitente antes de enviar.</div>
       </div>
       <span style="color:var(--muted);font-size:16px">›</span>
     </button>
@@ -2719,6 +2729,7 @@ async function toggleCheck(e, idx, campo) {
 // ══════════════════════════════════════════════════════════════
 let _avisarCurso = null;
 let _avisarEmailInstructor = '';
+let _avisarTelefonoInstructor = '';
 
 async function avisarInstructor(idx) {
   const c = cursos[idx]; if (!c) return;
@@ -2726,15 +2737,17 @@ async function avisarInstructor(idx) {
 
   // Buscar email del instructor en la hoja INSTRUCTORES
   _avisarEmailInstructor = '';
+  _avisarTelefonoInstructor = '';
   try {
     const r = await gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID, range: 'INSTRUCTORES!A:B',
+      spreadsheetId: SHEET_ID, range: 'INSTRUCTORES!A:C',
     });
     const rows = r.result.values || [];
     const fila = rows.slice(1).find(row =>
-      (row[1]||'').toLowerCase().trim() === c.instructor.toLowerCase().trim()
+      (row[1]||'').toLowerCase().trim() === String(c.instructor||'').toLowerCase().trim()
     );
     if (fila) _avisarEmailInstructor = fila[0] || '';
+    if (fila && /tel[eé]fono|m[oó]vil|whatsapp/i.test(rows[0]?.[2] || '')) _avisarTelefonoInstructor = fila[2] || '';
   } catch(e) { console.warn('No se pudo leer hoja instructores:', e); }
 
   // Rellenar info del curso en el modal
@@ -2746,6 +2759,8 @@ async function avisarInstructor(idx) {
     `<br><span style="color:var(--muted)">${c.curso||''} · ${fecha}${c.inicio&&c.fin?' · '+c.inicio+'–'+c.fin:''}${horas?' · '+horas+'h':''}${c.lugar?' · '+c.lugar:''}</span>`;
 
   document.getElementById('avisarMensajeExtra').value = '';
+  document.getElementById('avisarTelefono').value = _avisarTelefonoInstructor;
+  document.getElementById('avisarEmailDestino').value = _avisarEmailInstructor;
   document.getElementById('avisarOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -2763,7 +2778,7 @@ function _buildMensaje(c) {
   const fecha = formatFecha(c.fecha);
   const horas = c.inicio && c.fin ? calcH(c.inicio, c.fin) : '';
   const extra = document.getElementById('avisarMensajeExtra').value.trim();
-  return `Hola ${c.instructor}, te confirmo el siguiente curso:
+  return `Hola ${c.instructor || 'compañero/a'}, ${c.anulado ? 'te comunico que se ha anulado el siguiente curso:' : 'te confirmo el siguiente curso:'}
 
 📚 *${c.curso || 'Formación'}*
 📅 ${fecha}${c.inicio && c.fin ? `  ·  ${c.inicio}–${c.fin}` : ''}${horas ? `  (${horas}h)` : ''}
@@ -2778,23 +2793,36 @@ Puedes ver todos tus cursos en: ${new URL('cursos_instructor.html', window.locat
 
 function avisarWhatsApp() {
   const c = _avisarCurso; if (!c) return;
+  let tel = document.getElementById('avisarTelefono').value.replace(/\D/g, '');
+  if (tel.length === 9 && /^[67]/.test(tel)) tel = '34' + tel;
+  if (tel && (tel.length < 10 || tel.length > 15)) { mostrarToast('Comprueba el número de WhatsApp','#a36a00'); return; }
   const msg = encodeURIComponent(_buildMensaje(c));
-  window.open(`https://wa.me/?text=${msg}`, '_blank');
+  const url = tel ? 'https://wa.me/' + tel + '?text=' + msg : 'https://api.whatsapp.com/send?text=' + msg;
+  const popup=window.open(url,'_blank');
+  if (!popup) { mostrarToast('Permite las ventanas emergentes para WhatsApp','#a36a00'); return; }
   cerrarAvisarModal();
-  mostrarToast('💬 Abriendo WhatsApp…');
+  mostrarToast(tel ? '💬 Conversación de WhatsApp preparada' : '💬 Elige destinatario en WhatsApp');
 }
 
 function avisarEmail() {
   const c = _avisarCurso; if (!c) return;
+  const destinatario = document.getElementById('avisarEmailDestino').value.trim();
+  if (destinatario && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(destinatario)) { mostrarToast('Comprueba el email del instructor','#a36a00'); return; }
   const fecha = formatFecha(c.fecha);
-  const asunto = encodeURIComponent(`Curso asignado: ${c.curso || 'Formación'} · ${fecha}`);
-  const cuerpo = encodeURIComponent(_buildMensaje(c));
-  const mailto = _avisarEmailInstructor
-    ? `mailto:${_avisarEmailInstructor}?subject=${asunto}&body=${cuerpo}`
-    : `mailto:?subject=${asunto}&body=${cuerpo}`;
-  window.open(mailto, '_blank');
+  const asunto = (c.anulado ? 'Curso anulado: ' : 'Curso asignado: ') + (c.curso || 'Formación') + ' · ' + fecha;
+  const body = _buildMensaje(c).replace(/\*([^*]+)\*/g, "$1");
+  const url = new URL('https://mail.google.com/mail/');
+  url.searchParams.set('authuser','franjam32@gmail.com');
+  url.searchParams.set('view','cm');
+  url.searchParams.set('fs','1');
+  url.searchParams.set('tf','1');
+  if (destinatario) url.searchParams.set('to',destinatario);
+  url.searchParams.set('su',asunto);
+  url.searchParams.set('body',body);
+  const popup=window.open(url.toString(),'_blank');
+  if (!popup) { mostrarToast('Permite las ventanas emergentes para Gmail','#a36a00'); return; }
   cerrarAvisarModal();
-  mostrarToast('✉️ Abriendo correo…');
+  mostrarToast('✉️ Gmail abierto: verifica el remitente y envía');
 }
 
 // ══════════════════════════════════════════════════════════════
