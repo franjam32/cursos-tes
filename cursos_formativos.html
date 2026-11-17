@@ -1096,7 +1096,7 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
     <div class="sync-user" id="syncUser"></div>
   </div>
 
-  <div class="header">
+  <div class="header" id="desktopNavigation">
     <div class="header-top">
       <div class="logo">Cursos <span>·</span> TES</div>
       <div class="header-actions">
@@ -1135,7 +1135,8 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
         <p>Planificación de cursos TES: alta, asignación de docentes, seguimiento documental, avisos y facturación desde una vista de escritorio.</p>
       </div>
       <div class="desktop-actions">
-        <button class="btn-icono" id="desktopPanelsToggle" onclick="toggleDesktopPanels()" aria-expanded="true" aria-controls="courseInspectorPanel" title="Mostrar u ocultar ambos paneles laterales">Ocultar paneles</button>
+        <button class="btn-icono" id="desktopNavToggle" onclick="toggleDesktopNav()" aria-expanded="true" aria-controls="desktopNavigation" title="Mostrar u ocultar el menú lateral izquierdo">Ocultar menú</button>
+         <button class="btn-icono" id="desktopInspectorToggle" onclick="toggleDesktopInspector()" aria-expanded="true" aria-controls="courseInspectorPanel" title="Mostrar u ocultar la ficha lateral derecha">Ocultar ficha</button>
         <button class="btn-icono" onclick="sincronizar()" title="Sincronizar">↺</button>
         <button class="btn-icono" onclick="exportarExcel()" title="Exportar Excel">📤</button>
         <button class="btn-nuevo" onclick="abrirModal()">+ Nuevo curso</button>
@@ -1784,7 +1785,7 @@ function toggleDesktopSortDir() {
   renderDesktop(getFilteredCursos());
 }
 
-function toggleDesktopSidebar() { toggleDesktopPanels(); }
+function toggleDesktopSidebar() { toggleDesktopInspector(); }
 
 function setDesktopView(view) {
   desktopView = view;
@@ -2876,23 +2877,36 @@ function renderAssignmentSelect(container, id, options, current, emptyLabel, onC
   select.value=current || ''; select.onchange=()=>onChange(select.value);
   document.getElementById(container).replaceChildren(select);
 }
-function setDesktopPanelsHidden(hidden) {
+function setDesktopNavHidden(hidden) {
   document.body.classList.toggle('desktop-nav-collapsed', hidden);
+  const button = document.getElementById('desktopNavToggle');
+  if (button) { button.textContent = hidden ? 'Mostrar menú' : 'Ocultar menú'; button.setAttribute('aria-expanded', String(!hidden)); }
+}
+function setDesktopInspectorHidden(hidden) {
   document.body.classList.toggle('desktop-inspector-hidden', hidden);
-  const button = document.getElementById('desktopPanelsToggle');
-  button.textContent = hidden ? 'Mostrar paneles' : 'Ocultar paneles';
-  button.setAttribute('aria-expanded', String(!hidden));
+  const button = document.getElementById('desktopInspectorToggle');
+  if (button) { button.textContent = hidden ? 'Mostrar ficha' : 'Ocultar ficha'; button.setAttribute('aria-expanded', String(!hidden)); }
+  requestAnimationFrame(fitDesktopCalendar);
 }
-function toggleDesktopPanels() {
+function toggleDesktopNav() {
   const hidden = !document.body.classList.contains('desktop-nav-collapsed');
-  setDesktopPanelsHidden(hidden);
-  try { localStorage.setItem('cursos_panels_hidden', String(hidden)); } catch(e) {}
+  setDesktopNavHidden(hidden);
+  try { localStorage.setItem('cursos_nav_hidden', String(hidden)); } catch(e) {}
 }
+function toggleDesktopInspector() {
+  const hidden = !document.body.classList.contains('desktop-inspector-hidden');
+  setDesktopInspectorHidden(hidden);
+  try { localStorage.setItem('cursos_inspector_hidden', String(hidden)); } catch(e) {}
+}
+function toggleDesktopPanels() { toggleDesktopNav(); toggleDesktopInspector(); }
 function applyDesktopInspectorPreference() {
   try {
-    const saved = localStorage.getItem('cursos_panels_hidden');
-    setDesktopPanelsHidden(saved === null ? localStorage.getItem('cursos_inspector_hidden') === 'true' : saved === 'true');
-  } catch(e) {}
+    const legacy = localStorage.getItem('cursos_panels_hidden') === 'true';
+    const nav = localStorage.getItem('cursos_nav_hidden');
+    const inspector = localStorage.getItem('cursos_inspector_hidden');
+    setDesktopNavHidden(nav === null ? legacy : nav === 'true');
+    setDesktopInspectorHidden(inspector === null ? legacy : inspector === 'true');
+  } catch(e) { setDesktopNavHidden(false); setDesktopInspectorHidden(false); }
 }
 function duplicarCurso(idx) {
   if (!cursos[idx]) return;
