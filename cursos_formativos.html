@@ -968,6 +968,16 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
 }
 
 
+/* Gestión de nombres sin modificar los cursos históricos */
+.gestor-nombres {margin-top:10px;border-top:1px dashed var(--border);padding-top:8px;}
+.gestor-nombres summary {cursor:pointer;color:var(--accent);font-size:12px;font-weight:700;padding:5px 0;}
+.gestor-ayuda {font-size:11px;color:var(--muted);line-height:1.4;margin:6px 0;}
+.gestor-lista {max-height:190px;overflow-y:auto;display:grid;gap:5px;}
+.gestor-fila {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 7px;border:1px solid var(--border);border-radius:7px;background:var(--bg2);font-size:12px;}
+.gestor-fila.oculto {opacity:.65;}
+.gestor-fila button {border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);padding:5px 7px;cursor:pointer;font:inherit;white-space:nowrap;}
+.gestor-fila button:hover {border-color:var(--accent);}
+.gestor-fila button:disabled {opacity:.5;cursor:wait;}
 /* Cancelled course UI */
 .desktop-status.cancelled { color:#8e3434;background:#fce8e8;border-color:#d4a0a0; }
 .curso-card.anulado, .desktop-table tr.anulado {opacity:.72;}
@@ -1280,6 +1290,7 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
           <button type="button" class="btn-add-ins" onclick="agregarInstructorCustom()">Añadir y asignar</button>
         </div>
       </details>
+      <details class="gestor-nombres" id="gestionarInstructores"><summary>⚙ Gestionar instructores (retirar/restaurar)</summary><div id="instructorCatalogo"></div></details>
     </div>
     <div class="form-group assignment-section">
       <label class="form-label" for="fSolicitanteSelect">Persona solicitante</label>
@@ -1292,6 +1303,7 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
           <button type="button" class="btn-add-ins" onclick="agregarSolicitanteCustom()">Añadir y seleccionar</button>
         </div>
       </details>
+      <details class="gestor-nombres" id="gestionarSolicitantes"><summary>⚙ Gestionar solicitantes (retirar/restaurar)</summary><div id="solicitanteCatalogo"></div></details>
     </div>
 
     <div class="form-group assignment-section">
@@ -1373,7 +1385,8 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
      <div class="form-row" style="margin-bottom:12px">
        <div class="form-group" style="flex:1;min-width:160px">
          <label class="form-label" for="avisarTelefono">Teléfono WhatsApp del instructor</label>
-         <input class="form-input" id="avisarTelefono" type="tel" inputmode="tel" autocomplete="off" placeholder="Ej.: 600 123 456">
+         <input class="form-input" id="avisarTelefono" type="tel" inputmode="tel" autocomplete="off" placeholder="Ej.: 600 123 456" onchange="guardarTelefonoInstructor(true)">
+          <button class="btn-add-ins" id="avisarGuardarTelefono" style="margin-top:5px;font-size:11px;padding:6px 9px;min-height:0" onclick="guardarTelefonoInstructor()">Guardar número</button>
        </div>
        <div class="form-group" style="flex:1;min-width:160px">
          <label class="form-label" for="avisarEmailDestino">Email del instructor</label>
@@ -1381,6 +1394,16 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
        </div>
      </div>
 
+    <div class="form-row" style="align-items:end;margin:2px 0 11px">
+      <div class="form-group" style="flex:1;min-width:160px">
+        <label class="form-label" for="avisarProveedor">Cuenta para redactar el correo</label>
+        <select id="avisarProveedor" class="form-select" onchange="actualizarInfoRemitente()">
+          <option value="gmail">Gmail</option>
+          <option value="outlook">Outlook / Hotmail</option>
+        </select>
+      </div>
+      <div style="font-size:11px;color:var(--muted);flex:1;padding-bottom:7px" id="avisarRemitenteInfo"></div>
+    </div>
     <button class="cal-option" onclick="avisarWhatsApp()">
       <div class="cal-icon gc" style="background:rgba(37,211,102,0.15);font-size:22px">💬</div>
       <div class="cal-text">
@@ -1394,7 +1417,7 @@ body.tema-claro .cal-dot.otro,body.tema-claro .desktop-event.otro {background:#e
       <div class="cal-icon ics" style="background:rgba(90,184,248,0.15);font-size:22px">✉️</div>
       <div class="cal-text">
         <div class="cal-title">Email</div>
-        <div class="cal-sub">Prepara el correo en Gmail desde franjam32@gmail.com. Revisa el remitente antes de enviar.</div>
+        <div class="cal-sub">Prepara el correo desde la cuenta del usuario conectado (Fran o Julio). Revisa el remitente antes de enviar.</div>
       </div>
       <span style="color:var(--muted);font-size:16px">›</span>
     </button>
