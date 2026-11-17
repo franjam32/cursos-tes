@@ -2841,7 +2841,7 @@ async function avisarInstructor(idx) {
   document.getElementById('avisarMensajeExtra').value='';
   document.getElementById('avisarTelefono').value=_avisarTelefonoInstructor;
   document.getElementById('avisarEmailDestino').value=_avisarEmailInstructor;
-  document.getElementById('avisarProveedor').value=/@(hotmail|outlook|live)\./i.test(correoUsuario())?'outlook':'gmail';
+  document.getElementById('avisarProveedor').value='gmail';
   actualizarInfoRemitente();
   document.getElementById('avisarOverlay').classList.add('open');
   document.body.style.overflow='hidden';
