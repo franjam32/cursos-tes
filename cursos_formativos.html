@@ -1465,6 +1465,62 @@ let gapiOk = false, gisOk = false, tokenClient = null, syncTimer = null;
 let INSTRUCTORES = ['Fran Álvarez','Julio','Tere','Sin instructor'];
 let SOLICITANTES = ['Verónica','Guillermo','Lorena','Redtel','Miguel (Koremi)','Maite','Nuria Peso','CCOO','UGT','Cualtis','Sin solicitante'];
 
+
+const CONTACT_CATALOG_TAB='CATALOGO_CURSOS';
+const visibilidadNombres=new Map();
+const contactoInstructor=new Map();
+function claveNombre(tipo,nombre) {return tipo+':'+normalizarEmpresaPersona(nombre);}
+function nombreRetirado(tipo,nombre) {return visibilidadNombres.get(claveNombre(tipo,nombre))==='OCULTO';}
+async function cargarCatalogos() {
+  try {
+    const [catalog,contacts]=await Promise.all([
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:CONTACT_CATALOG_TAB+'!A:C'}),
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:SHEET_ID,range:'INSTRUCTORES!A:C'})
+    ]);
+    visibilidadNombres.clear();
+    for(const row of (catalog.result.values||[]).slice(1)){
+      const tipo=String(row[0]||'').trim().toLowerCase(),nombre=String(row[1]||'').trim();
+      if(!['instructor','solicitante'].includes(tipo)||!nombre)continue;
+      visibilidadNombres.set(claveNombre(tipo,nombre),String(row[2]||'OCULTO').trim().toUpperCase());
+      const opts=tipo==='instructor'?INSTRUCTORES:SOLICITANTES;
+      if(!opts.some(n=>normalizarEmpresaPersona(n)===normalizarEmpresaPersona(nombre)))opts.push(nombre);
+    }
+    contactoInstructor.clear();
+    for(const row of (contacts.result.values||[]).slice(1)){
+      const nombre=String(row[1]||'').trim();if(!nombre)continue;
+      contactoInstructor.set(normalizarEmpresaPersona(nombre),{nombre,email:String(row[0]||'').trim(),telefono:String(row[2]||'').trim()});
+      if(!INSTRUCTORES.some(n=>normalizarEmpresaPersona(n)===normalizarEmpresaPersona(nombre)))INSTRUCTORES.push(nombre);
+    }
+  } catch(e){console.warn('Error leyendo contactos:',e);}
+}
+function renderGestorNombres(tipo){
+  const box=document.getElementById(tipo==='instructor'?'instructorCatalogo':'solicitanteCatalogo');if(!box)return;
+  const opts=tipo==='instructor'?INSTRUCTORES:SOLICITANTES;
+  const names=[...new Map(opts.filter(n=>n&&!/^sin (instructor|solicitante)$/i.test(n)).map(n=>[normalizarEmpresaPersona(n),n])).values()].sort((a,b)=>a.localeCompare(b,'es'));
+  const help=document.createElement('p');help.className='gestor-ayuda';help.textContent='Retirar oculta el nombre para nuevos cursos, pero no borra los cursos existentes. Puedes restaurarlo.';
+  const list=document.createElement('div');list.className='gestor-lista';
+  for(const nombre of names){
+    const hidden=nombreRetirado(tipo,nombre);
+    const row=document.createElement('div');row.className='gestor-fila'+(hidden?' oculto':'');
+    const span=document.createElement('span');span.textContent=nombre+(hidden?' · retirado':'');
+    const button=document.createElement('button');button.type='button';button.textContent=hidden?'Restaurar':'Retirar';
+    button.onclick=async()=>{
+      if(!hidden&&!confirm('¿Retirar '+nombre+' del desplegable? No se modificarán cursos existentes.'))return;
+      button.disabled=true;
+      try{
+        await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:SHEET_ID,range:CONTACT_CATALOG_TAB+'!A:C',valueInputOption:'RAW',insertDataOption:'INSERT_ROWS',resource:{values:[[tipo,nombre,hidden?'VISIBLE':'OCULTO']]}});
+        visibilidadNombres.set(claveNombre(tipo,nombre),hidden?'VISIBLE':'OCULTO');
+        renderInstructores();renderSolicitantes();mostrarToast(hidden?'✓ Nombre restaurado':'✓ Nombre retirado');
+      }catch(e){console.error(e);button.disabled=false;mostrarToast('No se pudo guardar el cambio','#cc4433');}
+    };
+    row.append(span,button);list.append(row);
+  }
+  box.replaceChildren(help,list);
+}
+function correoUsuario(){
+  return contactoInstructor.get(normalizarEmpresaPersona(usuarioActual))?.email||(usuarioActual==='Fran'?'franjam32@gmail.com':'');
+}
+
 // ══════════════════════════════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════════════════════════════
@@ -1535,6 +1591,7 @@ async function cargarSheets() {
     });
 
     const rows = r.result.values || [];
+    await cargarCatalogos();
     if (rows.length <= 1) { cursos = []; render(); setSyncOk('Sin datos aún'); return; }
 
     // Fila 0 = cabecera, filas 1+ = datos
@@ -2208,7 +2265,8 @@ function calcularHoras() {
 }
 
 function renderInstructores() {
-  renderAssignmentSelect('instructorList', 'fInstructorSelect', INSTRUCTORES, instructorSel, 'Sin instructor', n => { instructorSel=n; renderInstructores(); });
+  renderAssignmentSelect('instructorList', 'fInstructorSelect', INSTRUCTORES.filter(n=>!nombreRetirado('instructor',n)), instructorSel, 'Sin instructor', n => { instructorSel=n; renderInstructores(); });
+  renderGestorNombres('instructor');
   document.getElementById('instructorAssignment').textContent = instructorSel && instructorSel !== 'Sin instructor' ? '✓ Asignado a ' + instructorSel : 'Sin instructor asignado';
 }
 
@@ -2216,12 +2274,14 @@ function selIns(n) { instructorSel = instructorSel===n?'':n; renderInstructores(
 
 function agregarInstructorCustom() {
   const inp=document.getElementById('nuevoInstructor'), n=inp.value.trim(); if(!n) return;
+  if(nombreRetirado('instructor',n)){mostrarToast('Restáuralo desde Gestionar instructores','#a36a00');return;}
   if(!INSTRUCTORES.includes(n)) INSTRUCTORES.unshift(n);
   instructorSel=n; inp.value=''; renderInstructores(); document.getElementById('newInstructorDetails').open=false;
 }
 
 function renderSolicitantes() {
-  renderAssignmentSelect('solicitanteList', 'fSolicitanteSelect', SOLICITANTES.filter(n=>!esEmpresaAnterior(n)), solicitanteSel, 'Sin solicitante', n => { solicitanteSel=n; sugerirEmpresaContacto(); renderSolicitantes(); });
+  renderAssignmentSelect('solicitanteList', 'fSolicitanteSelect', SOLICITANTES.filter(n=>!esEmpresaAnterior(n)&&!nombreRetirado('solicitante',n)), solicitanteSel, 'Sin solicitante', n => { solicitanteSel=n; sugerirEmpresaContacto(); renderSolicitantes(); });
+  renderGestorNombres('solicitante');
   document.getElementById('solicitanteAssignment').textContent = solicitanteSel && solicitanteSel !== 'Sin solicitante' ? '✓ Solicitado por ' + solicitanteSel : 'Sin solicitante seleccionado';
 }
 
@@ -2229,6 +2289,7 @@ function selSol(n) { solicitanteSel = solicitanteSel===n?'':n; renderSolicitante
 
 function agregarSolicitanteCustom() {
   const inp=document.getElementById('nuevoSolicitante'), n=inp.value.trim(); if(!n) return;
+  if(nombreRetirado('solicitante',n)){mostrarToast('Restáuralo desde Gestionar solicitantes','#a36a00');return;}
   if(!SOLICITANTES.includes(n)) SOLICITANTES.unshift(n);
   solicitanteSel=n; inp.value=''; sugerirEmpresaContacto(); renderSolicitantes(); document.getElementById('newSolicitanteDetails').open=false;
 }
